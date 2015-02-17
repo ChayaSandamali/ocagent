@@ -18,7 +18,7 @@ package org.wso2.carbon.oc.internal;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.wso2.carbon.oc.internal.publisher.IPublisher;
+import org.wso2.carbon.oc.publisher.IPublisher;
 
 public class OperationsCenterAgentReporterTask implements Runnable {
     private static Logger logger = LoggerFactory.getLogger(OperationsCenterAgentReporterTask.class);

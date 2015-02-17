@@ -16,16 +16,16 @@
 
 package org.wso2.carbon.oc.internal;
 
+import org.osgi.service.component.ComponentContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.osgi.service.component.ComponentContext;
 import org.wso2.carbon.base.api.ServerConfigurationService;
-import org.wso2.carbon.oc.internal.publisher.MBPublisher;
-import org.wso2.carbon.oc.internal.publisher.RTPublisher;
+import org.wso2.carbon.oc.publisher.IPublisher;
+import org.wso2.carbon.server.admin.common.IServerAdmin;
 import org.wso2.carbon.user.core.service.RealmService;
 import org.wso2.carbon.utils.ConfigurationContextService;
-import org.wso2.carbon.server.admin.common.IServerAdmin;
 
+import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -68,41 +68,27 @@ public class OperationsCenterAgentComponent {
         try {
             logger.info("Activating Operations Center Agent component.");
 
-            boolean enabled = OperationsCenterAgentUtils.isOperationsCenterAgentEnabled();
-            if (enabled == false) {
-                logger.info("Operations Center Agent is disabled");
-                return;
+
+            // get active publishers class paths
+            List<String> activeClasses = OperationsCenterAgentUtils.getActivePublishers();
+            for (String s: activeClasses)
+            logger.info(s);
+
+            for(String activeClass : activeClasses) {
+                IPublisher publisher = null;
+                Class publisherClass = Class.forName(activeClass);
+
+
+                publisher = (IPublisher) publisherClass.newInstance();
+
+                //Start reporting task as scheduled task
+                if(publisher != null) {
+                    OperationsCenterAgentReporterTask operationsCenterAgentReporterTask
+                            = new OperationsCenterAgentReporterTask(publisher);
+                    reporterTaskExecuter.scheduleAtFixedRate(operationsCenterAgentReporterTask, publisher.getInitialDelay(), publisher.getInterval(),
+                            TimeUnit.MILLISECONDS);
+                }
             }
-
-            String ocUrl = OperationsCenterAgentUtils.getOperationsCenterUrl();
-            String username = OperationsCenterAgentUtils.getOperationsCenterUsername();
-            String password = OperationsCenterAgentUtils.getOperationsCenterPassword();
-            long initialDelay = OperationsCenterAgentUtils.getOperationsCenterReportingInitialDelay();
-            long period = OperationsCenterAgentUtils.getOperationsCenterReportingInterval();
-
-            RTPublisher realTimePublisher = new RTPublisher(ocUrl,
-                    username, password);
-            
-            
-            MBPublisher messageBrokerPublisher = new MBPublisher();
-
-            OperationsCenterAgentDataHolder.getInstance().setRealTimePublisher(realTimePublisher);
-
-
-            OperationsCenterAgentReporterTask operationsCenterAgentReporterTask
-                    = new OperationsCenterAgentReporterTask(realTimePublisher);
-
-
-
-            reporterTaskExecuter.scheduleAtFixedRate(operationsCenterAgentReporterTask, initialDelay, period,
-                    TimeUnit.MILLISECONDS);
-
-            /*
-            OperationsCenterAgentReporterTask messageBrokerReporter
-                    = new OperationsCenterAgentReporterTask(messageBrokerPublisher);
-
-            reporterTaskExecuter.scheduleAtFixedRate(messageBrokerReporter, initialDelay, period,
-                    TimeUnit.MILLISECONDS);*/
 
 
         } catch (Throwable throwable) {
@@ -113,6 +99,10 @@ public class OperationsCenterAgentComponent {
 
     protected void deactivate(ComponentContext componentContext) {
         logger.info("Deactivating Operations Center Agent component.");
+        unsetConfigurationContextService(null);
+        unsetRealmService(null);
+        unsetServerAdminService(null);
+        unsetServerConfigurationService(null);
     }
 
     protected void unsetConfigurationContextService(ConfigurationContextService configurationContextService) {

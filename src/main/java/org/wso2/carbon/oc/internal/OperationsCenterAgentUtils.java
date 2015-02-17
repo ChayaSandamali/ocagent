@@ -16,28 +16,11 @@
 
 package org.wso2.carbon.oc.internal;
 
-import org.apache.axiom.om.OMElement;
-import org.apache.axiom.om.impl.builder.StAXOMBuilder;
-import org.apache.mina.handler.StreamIoHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
-import org.wso2.carbon.CarbonException;
-import org.wso2.carbon.base.ServerConfiguration;
-import org.wso2.carbon.base.ServerConfigurationException;
 import org.wso2.carbon.base.api.ServerConfigurationService;
 import org.wso2.carbon.server.admin.service.ServerAdmin;
-import org.wso2.carbon.utils.CarbonUtils;
-import org.wso2.carbon.utils.dbcreator.DatabaseCreator;
 
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.stream.XMLStreamException;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.InputStream;
 import java.util.*;
 
 /*
@@ -46,10 +29,37 @@ import java.util.*;
 
 public class OperationsCenterAgentUtils {
     private static Logger logger = LoggerFactory.getLogger(OperationsCenterAgentUtils.class);
+
+    //access from outside
+    public static final String IS_ENABLE = "Enable";
+    public static final String CLASS_PATH = "Class";
+    public static final String REPORT_URL = "ReportURL";
+    public static final String REPORT_HOST_NAME = "ReportHostName";
+    public static final String REPORT_PORT = "ReportHttpPort";
+    public static final String THRIFT_PORT = "ThriftPort";
+    public static final String THRIFT_SSL_PORT = "ThriftSSLPort";
+    public static final String USERNAME = "Username";
+    public static final String PASSWORD = "Password";
+    public static final String DELAY = "Reporting.InitialDelay";
+    public static final String INTERVAL = "Reporting.Interval";
+
+    private static final List<String> ALLOWED_PUBLISHER_ATTRIBUTES = Arrays
+            .asList(IS_ENABLE,
+                    CLASS_PATH,
+                    REPORT_URL,
+                    REPORT_HOST_NAME,
+                    REPORT_PORT,
+                    THRIFT_PORT,
+                    THRIFT_SSL_PORT,
+                    USERNAME,
+                    PASSWORD,
+                    DELAY,
+                    INTERVAL);
+
     private static final List<String> ALLOWED_CLASSES = Arrays
-            .asList("org.wso2.carbon.oc.internal.publisher.RTPublisher",
-                    "org.wso2.carbon.oc.internal.publisher.MBPublisher",
-                    "org.wso2.carbon.oc.internal.publisher.BAMPublisher");
+            .asList("org.wso2.carbon.oc.publisher.RTPublisher",
+                    "org.wso2.carbon.oc.publisher.MBPublisher",
+                    "org.wso2.carbon.oc.publisher.BAMPublisher");
 
     private static final List<String> ALLOWED_PUBLISHERS = Arrays
             .asList("RTPublisher",
@@ -57,21 +67,6 @@ public class OperationsCenterAgentUtils {
                     "BAMPublisher");
 
     private static Map<String, Map<String, String>> configurations;
-
-
-    public static final String IS_ENABLE = "Enable";
-    public static final String CLASS_PATH = "Class";
-    public static final String REPORT_URL = "ReportHostName";
-    public static final String REPORT_HOST_NAME = "ReportHttpPort";
-    public static final String REPORT_PORT = "ReportURL";
-    public static final String USERNAME = "Username";
-    public static final String PASSWORD = "Password";
-    public static final String INTERVAL = "Reporting.Interval";
-    public static final String DELAY = "Reporting.Delay";
-
-//    private Map<String, Map<String, String>> configurations = new HashMap<String, Map<String, String>>();
-
-
 
     public static ServerConfigurationService getServerConfigurationService() {
         ServerConfigurationService serverConfigurationService =
@@ -82,6 +77,10 @@ public class OperationsCenterAgentUtils {
         return serverConfigurationService;
     }
 
+    /**
+     *
+     * @return map of configuration xml data
+     */
     private static Map<String, Map<String, String>> getConfigurations() {
         ServerConfigurationService serverConfigurationService = OperationsCenterAgentUtils.getServerConfigurationService();
 //        Map<String, Map<String, String>> configurations = new HashMap<String, Map<String, String>>();
@@ -91,58 +90,26 @@ public class OperationsCenterAgentUtils {
             for (String publisher : ALLOWED_PUBLISHERS) {
                     String publisherPath = "Publishers." + publisher;
 
-                    String isEnable = serverConfigurationService.getFirstProperty(publisherPath+"."+IS_ENABLE);
-                    String classPath = serverConfigurationService.getFirstProperty(publisherPath+"."+CLASS_PATH);
-                    String reportURL = serverConfigurationService.getFirstProperty(publisherPath+"."+REPORT_URL);
-                    String reportHostName = serverConfigurationService.getFirstProperty(publisherPath+"."+REPORT_HOST_NAME);
-                    String reportPort = serverConfigurationService.getFirstProperty(publisherPath+"."+REPORT_PORT);
-                    String username = serverConfigurationService.getFirstProperty(publisherPath+"."+USERNAME);
-                    String password = serverConfigurationService.getFirstProperty(publisherPath+"."+PASSWORD);
-                    String interval = serverConfigurationService.getFirstProperty(publisherPath+"."+INTERVAL);
-                    String delay = serverConfigurationService.getFirstProperty(publisherPath+"."+DELAY);
-
-
                     Map<String, String> configMap = new HashMap<String, String>();
-                    configMap.put(IS_ENABLE, isEnable);
-                    configMap.put(CLASS_PATH, classPath);
-                    configMap.put(REPORT_URL, reportURL);
-                    configMap.put(REPORT_HOST_NAME, reportHostName);
-                    configMap.put(REPORT_PORT, reportPort);
-                    configMap.put(USERNAME, username);
-                    configMap.put(PASSWORD, password);
-                    configMap.put(INTERVAL, interval);
-                    configMap.put(DELAY, delay);
+                    for (String attr : ALLOWED_PUBLISHER_ATTRIBUTES) {
+                        String value = serverConfigurationService.getFirstProperty(publisherPath+"."+attr);
+                        if(value != null)
+                            configMap.put(attr, value);
+                    }
 
-                    configurations.put(classPath, configMap);
-                logger.info("init-config");
+                    configurations.put(configMap.get(CLASS_PATH), configMap);
             }
         }
 
         return configurations;
     }
 
-    public static String[] getPublishers() throws IllegalArgumentException {
-//        ServerConfigurationService serverConfigurationService = OperationsCenterAgentUtils.getServerConfigurationService();
-        logger.info(ALLOWED_CLASSES.get(0));
 
-        Map<String, String> configMap = OperationsCenterAgentUtils.getConfigurations().get(ALLOWED_CLASSES.get(0));
-        Iterator<Map.Entry<String, String>> iterator = configMap.entrySet().iterator();
 
-        for (; iterator.hasNext();) {
-            Map.Entry e = iterator.next();
-            logger.info(e.getKey() +" : "+e.getValue());
-        }
-
-//        logger.info("getPub() end");
-
-        /*String value[] = serverConfigurationService.getProperties("Publishers.Publisher.Class");
-        if (value == null) {
-            throw new IllegalArgumentException("OperationsCenterURL is not specified");
-        }
-        return value;*/
-        return null;
-    }
-
+    /**
+     *
+     * @return list of class path
+     */
     public static List<String> getActivePublishers() {
         List<String> activePublishers = new ArrayList<String>();
 
@@ -155,67 +122,19 @@ public class OperationsCenterAgentUtils {
         return activePublishers;
     }
 
+    /**
+     *
+     * @param classPath "org.wso2.carbon.oc.internal.RTPublisher"
+     * @return particular xml map
+     */
     public static Map<String, String> getPublisher(String classPath) {
         return OperationsCenterAgentUtils.getConfigurations().get(classPath);
     }
 
-
-
-
-    public static boolean isOperationsCenterAgentEnabled() {
-        ServerConfigurationService serverConfigurationService = OperationsCenterAgentUtils.getServerConfigurationService();
-        String value = serverConfigurationService.getFirstProperty("OperationsCenter.Enable");
-        if(Boolean.parseBoolean(value) == true) {
-            return true;
-        }
-        return false;
-    }
-
-    public static String getOperationsCenterUrl() throws IllegalArgumentException {
-        ServerConfigurationService serverConfigurationService = OperationsCenterAgentUtils.getServerConfigurationService();
-        String value = serverConfigurationService.getFirstProperty("OperationsCenter.OperationsCenterURL");
-        if (value == null) {
-            throw new IllegalArgumentException("OperationsCenterURL is not specified");
-        }
-        return value;
-    }
-
-    public static String getOperationsCenterUsername() throws IllegalArgumentException {
-        ServerConfigurationService serverConfigurationService = OperationsCenterAgentUtils.getServerConfigurationService();
-        String value = serverConfigurationService.getFirstProperty("OperationsCenter.OperationsCenterUsername");
-        if (value == null) {
-            throw new IllegalArgumentException("OperationsCenterUsername is not specified");
-        }
-        return value;
-    }
-
-    public static long getOperationsCenterReportingInitialDelay() throws IllegalArgumentException {
-        ServerConfigurationService serverConfigurationService = OperationsCenterAgentUtils.getServerConfigurationService();
-        String value = serverConfigurationService.getFirstProperty("OperationsCenter.OperationsCenterReporting.InitialDelay");
-        if (value == null) {
-            throw new IllegalArgumentException("OperationsCenterReporting.InitialDelay is not specified");
-        }
-        return Long.parseLong(value);
-    }
-
-    public static long getOperationsCenterReportingInterval() throws IllegalArgumentException {
-        ServerConfigurationService serverConfigurationService = OperationsCenterAgentUtils.getServerConfigurationService();
-        String value = serverConfigurationService.getFirstProperty("OperationsCenter.OperationsCenterReporting.Interval");
-        if (value == null) {
-            throw new IllegalArgumentException("OperationsCenterReporting.Interval is not specified");
-        }
-        return Long.parseLong(value);
-    }
-
-    public static String getOperationsCenterPassword() throws IllegalArgumentException {
-        ServerConfigurationService serverConfigurationService = OperationsCenterAgentUtils.getServerConfigurationService();
-        String value = serverConfigurationService.getFirstProperty("OperationsCenter.OperationsCenterPassword");
-        if (value == null) {
-            throw new IllegalArgumentException("OperationsCenterPassword is not specified");
-        }
-        return value;
-    }
-
+    /**
+     *
+     * @param command "RESTART", "SHUTDOWN" etc..
+     */
     public static void performAction(String command) {
         ServerAdmin serverAdmin = (ServerAdmin) OperationsCenterAgentDataHolder.getInstance().getServerAdmin();
         if (serverAdmin != null) {

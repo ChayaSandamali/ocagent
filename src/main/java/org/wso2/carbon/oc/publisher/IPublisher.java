@@ -1,4 +1,4 @@
-package org.wso2.carbon.oc.internal.publisher;
+package org.wso2.carbon.oc.publisher;
 
 /**
  * Created by noelyahan on 12/22/14.
@@ -6,4 +6,8 @@ package org.wso2.carbon.oc.internal.publisher;
 public interface IPublisher {
 
     void publish();
+
+    long getInitialDelay();
+
+    long getInterval();
 }

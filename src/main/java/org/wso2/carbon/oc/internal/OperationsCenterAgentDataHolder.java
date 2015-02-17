@@ -19,7 +19,6 @@ package org.wso2.carbon.oc.internal;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wso2.carbon.base.api.ServerConfigurationService;
-import org.wso2.carbon.oc.internal.publisher.RTPublisher;
 import org.wso2.carbon.user.core.service.RealmService;
 import org.wso2.carbon.utils.ConfigurationContextService;
 import org.wso2.carbon.server.admin.common.IServerAdmin;
@@ -29,13 +28,12 @@ public class OperationsCenterAgentDataHolder {
     private static OperationsCenterAgentDataHolder instance = new OperationsCenterAgentDataHolder();
     private static Logger logger = LoggerFactory.getLogger(OperationsCenterAgentDataHolder.class);
 
-    private OperationsCenterConnector operationsCenterConnector;
-    private RTPublisher realTimePublisher;
+//    private OperationsCenterConnector operationsCenterConnector;
     private ConfigurationContextService configurationContextService;
     private ServerConfigurationService serverConfigurationService;
-    private IServerAdmin serverAdmin;
-    private RealmService realmService;
-    private StatisticsAdmin statisticsAdmin;
+    private IServerAdmin serverAdmin;           // server information, commands
+    private RealmService realmService;          // tenant information
+    private StatisticsAdmin statisticsAdmin;    // request, response count
     private int serverId;
 
     private OperationsCenterAgentDataHolder() {
@@ -46,20 +44,20 @@ public class OperationsCenterAgentDataHolder {
         return instance;
     }
 
-    public OperationsCenterConnector getOperationsCenterConnector() {
+   /* public OperationsCenterConnector getOperationsCenterConnector() {
         return operationsCenterConnector;
     }
 
-    public void setRealTimePublisher(RTPublisher realTimePublisher) {
-        this.realTimePublisher = realTimePublisher;
-    }
 
     public void setOperationsCenterConnector(OperationsCenterConnector operationsCenterConnector) {
         this.operationsCenterConnector = operationsCenterConnector;
-    }
+    }*/
 
     public ConfigurationContextService getConfigurationContextService() {
         return configurationContextService;
+    }
+    public void setServerConfigurationService(ServerConfigurationService serverConfigurationService) {
+        this.serverConfigurationService = serverConfigurationService;
     }
 
     public void setConfigurationContextService(ConfigurationContextService configurationContextService) {
@@ -68,10 +66,6 @@ public class OperationsCenterAgentDataHolder {
 
     public ServerConfigurationService getServerConfigurationService() {
         return serverConfigurationService;
-    }
-
-    public void setServerConfigurationService(ServerConfigurationService serverConfigurationService) {
-        this.serverConfigurationService = serverConfigurationService;
     }
 
     public StatisticsAdmin getStatisticsAdmin() {

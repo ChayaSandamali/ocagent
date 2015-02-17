@@ -1,18 +1,23 @@
 package org.wso2.carbon.oc.internal.messages;
 
 /**
- * Created by noelyahan on 12/23/14.
+ * Created by noelyahan on 2/16/15.
  */
 public class OCEvent {
-    private _SynchronizationRequest payload;
+
+//    private _RegistrationRequest event;
+
+    private OCPayload event;
 
     public OCEvent() {
-        this.payload = new _SynchronizationRequest();
-        this.payload.setTimestamp(System.currentTimeMillis());
+        this.event = new OCPayload();
     }
 
-    public _SynchronizationRequest getPayload() {
-        return payload;
+    public OCPayload getEvent() {
+        return event;
     }
 
+    public void setPayload(IMessage payload) {
+        this.event.setPayload(payload);
+    }
 }

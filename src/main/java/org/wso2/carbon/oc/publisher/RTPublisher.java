@@ -1,4 +1,4 @@
-package org.wso2.carbon.oc.internal.publisher;
+package org.wso2.carbon.oc.publisher;
 
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpStatus;
@@ -18,8 +18,6 @@ import org.wso2.carbon.oc.internal.messages.*;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -38,22 +36,36 @@ public class RTPublisher implements IPublisher {
      */
     private HttpClient httpClient;
 
-    boolean isRegistered = false;
+    private boolean isRegistered = false;
 
     private String ocUrl;
+    private long initialDelay;
+    private long interval;
+
     private static final String REGISTRATION_PATH = "/api/register";
     private static final String SYNCHRONIZATION_PATH = "/api/update";
     private static final String CONTENT_TYPE = "application/json";
     private static final String CHARACTER_SET = "UTF-8";
 
-    public RTPublisher(String ocUrl, String username, String password) {
-        this.ocUrl = ocUrl;
+    public RTPublisher() {
+        Map<String, String> configMap = OperationsCenterAgentUtils.getPublisher(RTPublisher.class.getCanonicalName());
+        String username = configMap.get(OperationsCenterAgentUtils.USERNAME);
+        String password = configMap.get(OperationsCenterAgentUtils.PASSWORD);
+
+
+        this.ocUrl = configMap.get(OperationsCenterAgentUtils.REPORT_URL);
+
+        this.initialDelay = Long.parseLong(configMap.get(OperationsCenterAgentUtils.DELAY).toString());
+        this.interval = Long.parseLong(configMap.get(OperationsCenterAgentUtils.INTERVAL).toString());
+
+
         if (StringUtils.isBlank(this.ocUrl)) {
             throw new IllegalArgumentException("Operations Center URL is unspecified.");
         }
         this.httpClient = new HttpClient(new MultiThreadedHttpConnectionManager());
         this.httpClient.getState().setCredentials(AuthScope.ANY, new UsernamePasswordCredentials(username, password));
         this.httpClient.getParams().setAuthenticationPreemptive(true);
+
     }
 
     /**
@@ -80,40 +92,8 @@ public class RTPublisher implements IPublisher {
 
 
     private boolean register() {
-        /*OCRegistrationRequest ocRegistrationRequest = new OCRegistrationRequest();
-        try {
-            ocRegistrationRequest.getRegistrationRequest().setIp(OperationsCenterAgentDataExtractor.getInstance().getLocalIp());
-            ocRegistrationRequest.getRegistrationRequest().setServerName(OperationsCenterAgentDataExtractor.getInstance().getServerName());
-            ocRegistrationRequest.getRegistrationRequest().setServerVersion(OperationsCenterAgentDataExtractor.getInstance().getServerVersion());
-            ocRegistrationRequest.getRegistrationRequest().setDomain(OperationsCenterAgentDataExtractor.getInstance().getDomain());
-            ocRegistrationRequest.getRegistrationRequest().setSubDomain(OperationsCenterAgentDataExtractor.getInstance().getSubDomain());
-            ocRegistrationRequest.getRegistrationRequest().setAdminServiceUrl(OperationsCenterAgentDataExtractor.getInstance().getAdminServiceUrl());
-            ocRegistrationRequest.getRegistrationRequest().setStartTime(OperationsCenterAgentDataExtractor.getInstance().getServerStartTime());
-            ocRegistrationRequest.getRegistrationRequest().setOs(OperationsCenterAgentDataExtractor.getInstance().getOs());
-            ocRegistrationRequest.getRegistrationRequest().setTotalMemory(OperationsCenterAgentDataExtractor.getInstance().getTotalMemory());
-            ocRegistrationRequest.getRegistrationRequest().setCpuCount(OperationsCenterAgentDataExtractor.getInstance().getCpuCount());
-            ocRegistrationRequest.getRegistrationRequest().setCpuSpeed(OperationsCenterAgentDataExtractor.getInstance().getCpuSpeed());
-            List<String> patches = OperationsCenterAgentDataExtractor.getInstance().getPatches();
-            if (patches.size() > 0) {
-                ocRegistrationRequest.getRegistrationRequest().setPatches(patches);
-            }
-        } catch (ParameterUnavailableException e) {
-            logger.error("Failed to read registration parameter. ", e);
-            return false;
-        }
 
-        String jsonString = null;
-        try {
-                jsonString = objectMapper.writeValueAsString(ocRegistrationRequest);
-            } catch (IOException e) {
-                logger.error("Failed to get JSON String from OCRegistrationRequest", e);
-                return false;
-            }
-*/
-//        OperationsCenterAgentUtils.test(CarbonUtils.getUserMgtXMLPath());
-
-
-        String jsonString = MessageHelper.getRealTimeRegistrationRequest();
+        String jsonString = MessageHelper.getRTRegistrationRequest();
 
 
 
@@ -140,83 +120,15 @@ public class RTPublisher implements IPublisher {
     }
 
     private void sync() {
-//        OCSynchronizationRequest ocSynchronizationRequest = new OCSynchronizationRequest();
-//        String s[] = OperationsCenterAgentUtils.getPublishers();
-        List<String> activePublishers = OperationsCenterAgentUtils.getActivePublishers();
+
+        /*List<String> activePublishers = OperationsCenterAgentUtils.getActivePublishers();
         for (String s : activePublishers) {
             System.out.println(s);
         }
 
 
-
-
-
-        /*logger.info("size: "+s.length);
-        for (String x : s) {
-            logger.info(x);
-        }*/
-//        logger.info(""+OperationsCenterAgentUtils.getPublishers());
-//        OMElement omElement = OperationsCenterAgentUtils.getConfigurationElement("/repository/conf/oc.xml");
-//        OMElement realmElement = omElement.getFirstChildWithName(new QName("Realm"));
-//        logger.info(realmElement.getText());
-        /*try {
-            logger.info("xml = " + omElement.toStringWithConsume());
-        } catch (XMLStreamException e) {
-            logger.info(e.getMessage());
-        }*/
-
-
-
-        /*
-        logger.info("-----STAT COUNT----");
-        logger.info("req: "+OperationsCenterAgentDataExtractor.getInstance().getAllRequestCount());
-        logger.info("res: "+OperationsCenterAgentDataExtractor.getInstance().getAllResponseCount());
-        logger.info("-----STAT COUNT----");
-        //*/
-
-
-        /*try {
-            ocSynchronizationRequest.getSynchronizationRequest().
-                    setAdminServiceUrl(OperationsCenterAgentDataExtractor.getInstance().getAdminServiceUrl());
-            ocSynchronizationRequest.getSynchronizationRequest().
-                    setServerUpTime(OperationsCenterAgentDataExtractor.getInstance().getServerUpTime());
-            ocSynchronizationRequest.getSynchronizationRequest().
-                    setThreadCount(OperationsCenterAgentDataExtractor.getInstance().getThreadCount());
-            ocSynchronizationRequest.getSynchronizationRequest().
-                    setFreeMemory(OperationsCenterAgentDataExtractor.getInstance().getFreeMemory());
-            ocSynchronizationRequest.getSynchronizationRequest().
-                    setIdleCpuUsage(OperationsCenterAgentDataExtractor.getInstance().getIdelCpuUsage());
-            ocSynchronizationRequest.getSynchronizationRequest().
-                    setSystemCpuUsage(OperationsCenterAgentDataExtractor.getInstance().getSystemCpuUsage());
-            ocSynchronizationRequest.getSynchronizationRequest().
-                    setUserCpuUsage(OperationsCenterAgentDataExtractor.getInstance().getUserCpuUsage());
-            ocSynchronizationRequest.getSynchronizationRequest().
-                    setSystemLoadAverage(OperationsCenterAgentDataExtractor.getInstance().getSystemLoadAverage());
-            ocSynchronizationRequest.getSynchronizationRequest().
-                    setTenants(OperationsCenterAgentDataHolder.getInstance().getRealmService().getTenantManager().getAllTenants());
-
-
-
-
-        } catch (ParameterUnavailableException e) {
-            logger.error("Failed to read synchronization parameter. ", e);
-            return;
-        } catch (UserStoreException e) {
-            e.printStackTrace();
-        }
-
-        String jsonString = null;
-        String jsonMbString = null;
-        try {
-            jsonString = objectMapper.writeValueAsString(ocSynchronizationRequest);
-
-
-        } catch (IOException e) {
-            logger.error("Failed to get JSON String from ocSynchronizationRequest", e);
-            return;
-        }*/
-
-        String jsonString = MessageHelper.getRealTimeSynchronizationRequest();
+*/
+        String jsonString = MessageHelper.getRTSynchronizationRequest();
 
         String responseBody = sendPostRequest(ocUrl + SYNCHRONIZATION_PATH, jsonString, HttpStatus.SC_OK);
         if (responseBody != null && responseBody.length() > 0) {
@@ -274,5 +186,13 @@ public class RTPublisher implements IPublisher {
             postMethod.releaseConnection();
         }
         return null;
+    }
+
+    public long getInitialDelay() {
+        return initialDelay;
+    }
+
+    public long getInterval() {
+        return interval;
     }
 }

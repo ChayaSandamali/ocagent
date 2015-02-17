@@ -21,22 +21,15 @@ package org.wso2.carbon.oc.internal.messages;
  */
 public class OCSynchronizationRequest {
     private _SynchronizationRequest synchronizationRequest;
-    private OCEvent event;
 
 
 
     public OCSynchronizationRequest() {
         this.synchronizationRequest = new _SynchronizationRequest();
         this.synchronizationRequest.setTimestamp(System.currentTimeMillis());
-
-        this.event = new OCEvent();
     }
 
     public _SynchronizationRequest getSynchronizationRequest() {
         return synchronizationRequest;
-    }
-
-    public OCEvent getEvent() {
-        return event;
     }
 }

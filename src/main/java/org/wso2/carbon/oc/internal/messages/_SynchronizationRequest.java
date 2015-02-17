@@ -21,7 +21,7 @@ import org.wso2.carbon.user.api.Tenant;
 /**
  * Created by jayanga on 11/10/14.
  */
-public class _SynchronizationRequest {
+public class _SynchronizationRequest implements IMessage{
     private double freeMemory;
     private double idleCpuUsage;
     private double systemCpuUsage;
