@@ -17,13 +17,13 @@
 package org.wso2.carbon.oc.internal.messages;
 
 public class OCRegistrationResponse {
-    private _RegistrationResponse registrationResponse;
+	private RegistrationResponse registrationResponse;
 
-    public OCRegistrationResponse() {
-        this.registrationResponse = new _RegistrationResponse();
-    }
+	public OCRegistrationResponse() {
+		this.registrationResponse = new RegistrationResponse();
+	}
 
-    public _RegistrationResponse getRegistrationResponse() {
-        return registrationResponse;
-    }
+	public RegistrationResponse getRegistrationResponse() {
+		return registrationResponse;
+	}
 }

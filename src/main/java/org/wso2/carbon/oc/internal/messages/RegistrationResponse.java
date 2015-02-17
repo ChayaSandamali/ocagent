@@ -1,5 +1,5 @@
 /*
- * Copyright 2004,2005 The Apache Software Foundation.
+ * Copyright 2014 The Apache Software Foundation.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,11 +14,19 @@
  * limitations under the License.
  */
 
-package org.wso2.carbon.oc.service;
+package org.wso2.carbon.oc.internal.messages;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+/**
+ * Created by jayanga on 11/10/14.
+ */
+public class RegistrationResponse {
+	private String serverId;
 
-public class OperationsCenterAgentService {
-    private static Logger logger = LoggerFactory.getLogger(OperationsCenterAgentService.class);
+	public String getServerId() {
+		return serverId;
+	}
+
+	public void setServerId(String serverId) {
+		this.serverId = serverId;
+	}
 }

@@ -1,3 +1,19 @@
+/*
+ * Copyright 2004,2005 The Apache Software Foundation.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *       http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.wso2.carbon.oc.publisher;
 
 import org.slf4j.Logger;
@@ -18,20 +34,20 @@ import java.util.Map;
 public class BAMPublisher implements IPublisher{
     static Logger logger =  LoggerFactory.getLogger(BAMPublisher.class);
 
-//    config attributes
+	//config attributes
     private String username;
     private String password;
     private String defaultHostName;
     private String thriftPort;
     private long initialDelay;
     private long interval;
+	private boolean isRegistered = false;
 
-    //
+    //stream names
     private static final String REGISTER_STREAM = "RegisterStream";
     private static final String SYNC_STREAM = "SyncStream";
 
-//    publishing attributes
-    private static DataPublisher dataPublisher = null;
+	private static DataPublisher dataPublisher = null;
 
 
 
@@ -51,6 +67,7 @@ public class BAMPublisher implements IPublisher{
                     setTrustStoreParams();
                     dataPublisher = new DataPublisher("tcp://"+defaultHostName+":"+thriftPort, username, password);
                 }
+
             }
 
         } catch (MalformedURLException e) {
@@ -62,31 +79,41 @@ public class BAMPublisher implements IPublisher{
         } catch (TransportException e) {
             logger.info(e.getMessage());
         }
-        logger.info("MBPublisher init done");
+        logger.info("BAMPublisher init done");
     }
 
-    public String getStreamId(String streamDef) {
+	/**
+	 *
+	 * @param streamDef - stream definition json string event > payload
+	 * @return String - unique generated stream id
+	 */
+    private String getStreamId(String streamDef) {
         String streamId = null;
 
             try {
                 streamId = dataPublisher.defineStream(streamDef);
             } catch (AgentException e) {
-                e.printStackTrace();
+                logger.info(e.getMessage(), e);
             } catch (MalformedStreamDefinitionException e) {
-                e.printStackTrace();
+	            logger.info(e.getMessage(), e);
             } catch (StreamDefinitionException e) {
-                e.printStackTrace();
+	            logger.info(e.getMessage(), e);
             } catch (DifferentStreamDefinitionAlreadyDefinedException e) {
-                e.printStackTrace();
+	            logger.info(e.getMessage(), e);
             }
 
 
         return streamId;
     }
 
+	/**
+	 *
+	 * @return String - register message stream definition json
+	 */
     private String getRegisterStreamDef() {
         return "{" +
                 "  'name':'"+REGISTER_STREAM+"'," +
+                " 'version':'" + 1.1 + "'," +
                 "  'description': 'Storing OC server registration requests'," +
                 "  'tags':['register', 'request', 'reg_request']," +
                 "  'metaData':[" +
@@ -98,6 +125,10 @@ public class BAMPublisher implements IPublisher{
                 "}";
     }
 
+	/**
+	 *
+	 * @return String - synchronize message stream definition json
+	 */
     private String getSynchronizeStreamDef() {
         return "{" +
                 "  'name':'"+SYNC_STREAM+"'," +
@@ -118,34 +149,32 @@ public class BAMPublisher implements IPublisher{
         System.setProperty("javax.net.ssl.trustStorePassword", "wso2carbon");
     }
 
-    //REGISTER Request
-    public void publishRegisterRequestStreamData(String ip, String serverName, String domain, String subDomain ,String adminServiceUrl, String startTime, String os, double totalMemory, int cpuCount, double cpuSpeed){
-        try {
-            //streamId, meta data array, correlational data array, payload data array
-            dataPublisher.publish(null, null, null, new Object[]{ip, serverName, domain, subDomain,adminServiceUrl, startTime, os, totalMemory, cpuCount, cpuSpeed});
-
-        } catch (AgentException e) {
-            logger.info(e.getMessage());
-        }
-    }
 
     @Override
     public void publish() {
 
         logger.info("==========wso2-bam==========reporting");
+	    try {
 
-//        publishRegisterRequestStreamData("12312414", "hello.noel", "wso2.com", "admin142353464323", "12:30", "32323","Windows", 124135.23, 4, 3.4);
-
-        try {
-            dataPublisher.publish(getStreamId(getRegisterStreamDef()), null, null, MessageHelper.getBAMRegistrationRequest());
-            dataPublisher.publish(getStreamId(getSynchronizeStreamDef()), null, null, MessageHelper.getBAMSynchronizationRequest());
-
-
+	        if(!isRegistered) {
+		        dataPublisher.publish(getStreamId(getRegisterStreamDef()), null, null, MessageHelper.getBAMRegistrationRequest());
+		        isRegistered = true;
+	        }else{
+		        dataPublisher.publish(getStreamId(getSynchronizeStreamDef()), null, null, MessageHelper.getBAMSynchronizationRequest());
+	        }
 
         } catch (AgentException e) {
+	        logger.info("BAM connection gone");
             logger.info(e.getMessage());
         }
     }
+
+	/**
+	 *  stop bam publisher
+	 */
+	public void stop(){
+		dataPublisher.stop();
+	}
 
     @Override
     public long getInitialDelay() {

@@ -20,13 +20,13 @@ package org.wso2.carbon.oc.internal.messages;
  * Created by jayanga on 11/10/14.
  */
 public class OCSynchronizationResponse {
-    private _SynchronizationResponse synchronizationResponse;
+	private SynchronizationResponse synchronizationResponse;
 
-    public OCSynchronizationResponse() {
-        this.synchronizationResponse = new _SynchronizationResponse();
-    }
+	public OCSynchronizationResponse() {
+		this.synchronizationResponse = new SynchronizationResponse();
+	}
 
-    public _SynchronizationResponse getSynchronizationResponse() {
-        return synchronizationResponse;
-    }
+	public SynchronizationResponse getSynchronizationResponse() {
+		return synchronizationResponse;
+	}
 }

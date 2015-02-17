@@ -19,32 +19,32 @@ package org.wso2.carbon.oc.internal.messages;
 /**
  * Created by jayanga on 11/10/14.
  */
-public class _SynchronizationResponse {
-    private String serverId;
-    private String status;
-    private String command;
+public class SynchronizationResponse {
+	private String serverId;
+	private String status;
+	private String command;
 
-    public String getServerId() {
-        return serverId;
-    }
+	public String getServerId() {
+		return serverId;
+	}
 
-    public void setServerId(String serverId) {
-        this.serverId = serverId;
-    }
+	public void setServerId(String serverId) {
+		this.serverId = serverId;
+	}
 
-    public String getStatus() {
-        return status;
-    }
+	public String getStatus() {
+		return status;
+	}
 
-    public void setStatus(String status) {
-        this.status = status;
-    }
+	public void setStatus(String status) {
+		this.status = status;
+	}
 
-    public String getCommand() {
-        return command;
-    }
+	public String getCommand() {
+		return command;
+	}
 
-    public void setCommand(String command) {
-        this.command = command;
-    }
+	public void setCommand(String command) {
+		this.command = command;
+	}
 }

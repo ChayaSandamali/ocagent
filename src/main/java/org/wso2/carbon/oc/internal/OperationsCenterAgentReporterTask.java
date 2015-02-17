@@ -20,16 +20,20 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wso2.carbon.oc.publisher.IPublisher;
 
+/**
+ * This class allows to report / publish data periodically
+ */
+
 public class OperationsCenterAgentReporterTask implements Runnable {
-    private static Logger logger = LoggerFactory.getLogger(OperationsCenterAgentReporterTask.class);
-    private IPublisher operationsCenterConnector;
+	private static Logger logger = LoggerFactory.getLogger(OperationsCenterAgentReporterTask.class);
+	private IPublisher operationsCenterConnector;
 
-    public OperationsCenterAgentReporterTask(IPublisher operationsCenterConnector) {
-        this.operationsCenterConnector = operationsCenterConnector;
-    }
+	public OperationsCenterAgentReporterTask(IPublisher operationsCenterConnector) {
+		this.operationsCenterConnector = operationsCenterConnector;
+	}
 
-    @Override
-    public void run() {
-        operationsCenterConnector.publish();
-    }
+	@Override
+	public void run() {
+		operationsCenterConnector.publish();
+	}
 }

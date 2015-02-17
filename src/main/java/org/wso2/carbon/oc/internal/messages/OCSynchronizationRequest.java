@@ -20,16 +20,14 @@ package org.wso2.carbon.oc.internal.messages;
  * Created by jayanga on 11/10/14.
  */
 public class OCSynchronizationRequest {
-    private _SynchronizationRequest synchronizationRequest;
+	private SynchronizationRequest synchronizationRequest;
 
+	public OCSynchronizationRequest() {
+		this.synchronizationRequest = new SynchronizationRequest();
+		this.synchronizationRequest.setTimestamp(System.currentTimeMillis());
+	}
 
-
-    public OCSynchronizationRequest() {
-        this.synchronizationRequest = new _SynchronizationRequest();
-        this.synchronizationRequest.setTimestamp(System.currentTimeMillis());
-    }
-
-    public _SynchronizationRequest getSynchronizationRequest() {
-        return synchronizationRequest;
-    }
+	public SynchronizationRequest getSynchronizationRequest() {
+		return synchronizationRequest;
+	}
 }

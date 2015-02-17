@@ -17,14 +17,14 @@
 package org.wso2.carbon.oc.internal.messages;
 
 public class OCRegistrationRequest {
-    private _RegistrationRequest registrationRequest;
+	private RegistrationRequest registrationRequest;
 
-    public OCRegistrationRequest() {
-        this.registrationRequest = new _RegistrationRequest();
-        this.registrationRequest.setTimestamp(System.currentTimeMillis());
-    }
+	public OCRegistrationRequest() {
+		this.registrationRequest = new RegistrationRequest();
+		this.registrationRequest.setTimestamp(System.currentTimeMillis());
+	}
 
-    public _RegistrationRequest getRegistrationRequest() {
-        return registrationRequest;
-    }
+	public RegistrationRequest getRegistrationRequest() {
+		return registrationRequest;
+	}
 }

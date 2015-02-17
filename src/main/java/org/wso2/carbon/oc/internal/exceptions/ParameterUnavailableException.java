@@ -20,7 +20,7 @@ package org.wso2.carbon.oc.internal.exceptions;
  * Created by jayanga on 11/11/14.
  */
 public class ParameterUnavailableException extends Exception {
-    public ParameterUnavailableException(String message) {
-        super(message);
-    }
+	public ParameterUnavailableException(String message) {
+		super(message);
+	}
 }

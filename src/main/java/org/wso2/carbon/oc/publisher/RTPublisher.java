@@ -1,3 +1,19 @@
+/*
+ * Copyright 2004,2005 The Apache Software Foundation.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *       http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.wso2.carbon.oc.publisher;
 
 import org.apache.commons.httpclient.HttpClient;
@@ -14,18 +30,19 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wso2.carbon.oc.internal.OperationsCenterAgentDataHolder;
 import org.wso2.carbon.oc.internal.OperationsCenterAgentUtils;
-import org.wso2.carbon.oc.internal.messages.*;
+import org.wso2.carbon.oc.internal.messages.MessageHelper;
+import org.wso2.carbon.oc.internal.messages.OCRegistrationResponse;
+import org.wso2.carbon.oc.internal.messages.OCSynchronizationResponse;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.Map;
 
 /**
- * Created by noelyahan on 12/22/14.
+ * intro
  */
 public class RTPublisher implements IPublisher {
 
-    private static boolean isRegister = false;
 
 
     private static Logger logger = LoggerFactory.getLogger(RTPublisher.class);
@@ -36,6 +53,9 @@ public class RTPublisher implements IPublisher {
      */
     private HttpClient httpClient;
 
+	/**
+	 * check oc registration message
+	 */
     private boolean isRegistered = false;
 
     private String ocUrl;
@@ -48,15 +68,13 @@ public class RTPublisher implements IPublisher {
     private static final String CHARACTER_SET = "UTF-8";
 
     public RTPublisher() {
+	    // get set config
         Map<String, String> configMap = OperationsCenterAgentUtils.getPublisher(RTPublisher.class.getCanonicalName());
         String username = configMap.get(OperationsCenterAgentUtils.USERNAME);
         String password = configMap.get(OperationsCenterAgentUtils.PASSWORD);
-
-
         this.ocUrl = configMap.get(OperationsCenterAgentUtils.REPORT_URL);
-
-        this.initialDelay = Long.parseLong(configMap.get(OperationsCenterAgentUtils.DELAY).toString());
-        this.interval = Long.parseLong(configMap.get(OperationsCenterAgentUtils.INTERVAL).toString());
+        this.initialDelay = Long.parseLong(configMap.get(OperationsCenterAgentUtils.DELAY));
+        this.interval = Long.parseLong(configMap.get(OperationsCenterAgentUtils.INTERVAL));
 
 
         if (StringUtils.isBlank(this.ocUrl)) {
@@ -65,37 +83,29 @@ public class RTPublisher implements IPublisher {
         this.httpClient = new HttpClient(new MultiThreadedHttpConnectionManager());
         this.httpClient.getState().setCredentials(AuthScope.ANY, new UsernamePasswordCredentials(username, password));
         this.httpClient.getParams().setAuthenticationPreemptive(true);
-
+	    logger.info("RTPublisher init done");
     }
 
-    /**
-     * @return
-     */
-    public HttpClient getHttpClient() {
-        return httpClient;
-    }
 
-    public static boolean isRegister(){
-        return isRegister;
-    }
+
 
     @Override
     public void publish() {
         logger.info("======real-time===========reporting");
 
-        if (isRegistered == false) {
+        if (!isRegistered) {
             register();
         } else {
             sync();
         }
     }
 
-
-    private boolean register() {
+	/**
+	 * send the real time registration message
+	 */
+    private void register() {
 
         String jsonString = MessageHelper.getRTRegistrationRequest();
-
-
 
         String responseBody = sendPostRequest(ocUrl + REGISTRATION_PATH, jsonString, HttpStatus.SC_CREATED);
         if (responseBody != null && responseBody.length() > 0) {
@@ -104,7 +114,6 @@ public class RTPublisher implements IPublisher {
                 ocRegistrationResponse = objectMapper.readValue(responseBody, OCRegistrationResponse.class);
             } catch (IOException e) {
                 logger.error("Failed to read values from OCRegistrationResponse", e);
-                return false;
             }
 
             if (ocRegistrationResponse != null) {
@@ -116,18 +125,13 @@ public class RTPublisher implements IPublisher {
                 logger.error("Unable receive JSON registration response.");
             }
         }
-        return false;
     }
 
+	/**
+	 * send the real time synchronization message
+	 */
     private void sync() {
 
-        /*List<String> activePublishers = OperationsCenterAgentUtils.getActivePublishers();
-        for (String s : activePublishers) {
-            System.out.println(s);
-        }
-
-
-*/
         String jsonString = MessageHelper.getRTSynchronizationRequest();
 
         String responseBody = sendPostRequest(ocUrl + SYNCHRONIZATION_PATH, jsonString, HttpStatus.SC_OK);
@@ -156,7 +160,13 @@ public class RTPublisher implements IPublisher {
         }
     }
 
-
+	/**
+	 * Send basic post request
+	 * @param url       - operations center url
+	 * @param request   - json string request message
+	 * @param expected  - expected http status code
+	 * @return
+	 */
     public String sendPostRequest(String url, String request, int expected) {
         PostMethod postMethod = new PostMethod(url);
         try {
@@ -187,6 +197,8 @@ public class RTPublisher implements IPublisher {
         }
         return null;
     }
+
+
 
     public long getInitialDelay() {
         return initialDelay;
