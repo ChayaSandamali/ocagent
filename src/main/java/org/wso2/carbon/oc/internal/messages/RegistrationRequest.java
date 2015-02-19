@@ -21,7 +21,7 @@ import java.util.List;
 /**
  * Created by jayanga on 11/10/14.
  */
-public class RegistrationRequest implements IMessage {
+public class RegistrationRequest implements Messager {
 	private String ip;
 	private String serverName;
 	private String serverVersion;

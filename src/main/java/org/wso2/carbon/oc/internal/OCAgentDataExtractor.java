@@ -18,7 +18,7 @@ package org.wso2.carbon.oc.internal;
 
 import com.jezhumble.javasysmon.JavaSysMon;
 import org.apache.axiom.om.OMElement;
-import org.apache.axis2.AxisFault;
+import org.wso2.carbon.user.api.Tenant;
 import org.apache.axis2.clustering.ClusteringAgent;
 import org.apache.axis2.description.Parameter;
 import org.slf4j.Logger;
@@ -27,6 +27,7 @@ import org.wso2.carbon.base.api.ServerConfigurationService;
 import org.wso2.carbon.oc.internal.exceptions.ParameterUnavailableException;
 import org.wso2.carbon.server.admin.common.ServerUpTime;
 import org.wso2.carbon.server.admin.service.ServerAdmin;
+import org.wso2.carbon.user.api.UserStoreException;
 import org.wso2.carbon.utils.CarbonUtils;
 import org.wso2.carbon.utils.ConfigurationContextService;
 
@@ -42,10 +43,10 @@ import java.util.List;
  * This class extract server data from server admin service
  */
 
-public class OperationsCenterAgentDataExtractor {
-	private static OperationsCenterAgentDataExtractor instance =
-			new OperationsCenterAgentDataExtractor();
-	private static Logger logger = LoggerFactory.getLogger(OperationsCenterAgentComponent.class);
+public class OCAgentDataExtractor {
+	private static OCAgentDataExtractor instance =
+			new OCAgentDataExtractor();
+	private static Logger logger = LoggerFactory.getLogger(OCAgentDataExtractor.class);
 
 	private static final double PERCENT = 100;
 	private static final double MEGA = 1000000;
@@ -70,14 +71,14 @@ public class OperationsCenterAgentDataExtractor {
 	private double cpuSpeed;
 	private double totalMemory;
 
-	private OperationsCenterAgentDataExtractor() {
+	private OCAgentDataExtractor() {
 		os = javaSysMon.osName();
 		cpuCount = javaSysMon.numCpus();
 		cpuSpeed = javaSysMon.cpuFrequencyInHz() / GIGA;
 		totalMemory = javaSysMon.physical().getTotalBytes() / MEGA;
 	}
 
-	public static OperationsCenterAgentDataExtractor getInstance() {
+	public static OCAgentDataExtractor getInstance() {
 		return instance;
 	}
 
@@ -100,7 +101,7 @@ public class OperationsCenterAgentDataExtractor {
 
 	public String getServerName() throws ParameterUnavailableException {
 		ServerConfigurationService serverConfigurationService =
-				OperationsCenterAgentDataHolder.getInstance().getServerConfigurationService();
+				OCAgentDataHolder.getInstance().getServerConfigurationService();
 		String value = serverConfigurationService.getFirstProperty(NAME);
 		if (value == null) {
 			throw new ParameterUnavailableException(
@@ -111,7 +112,7 @@ public class OperationsCenterAgentDataExtractor {
 
 	public String getServerVersion() {
 		ServerAdmin serverAdmin =
-				(ServerAdmin) OperationsCenterAgentDataHolder.getInstance().getServerAdmin();
+				(ServerAdmin) OCAgentDataHolder.getInstance().getServerAdmin();
 		if (serverAdmin != null) {
 			try {
 				return serverAdmin.getServerVersion();
@@ -124,7 +125,7 @@ public class OperationsCenterAgentDataExtractor {
 
 	public String getAdminServiceUrl() throws ParameterUnavailableException {
 		ServerConfigurationService serverConfigurationService =
-				OperationsCenterAgentDataHolder.getInstance().getServerConfigurationService();
+				OCAgentDataHolder.getInstance().getServerConfigurationService();
 		String value = serverConfigurationService.getFirstProperty(WEB_CONTEXT_ROOT);
 		if (value == null) {
 			throw new ParameterUnavailableException(WEB_CONTEXT_ROOT + " is not available.");
@@ -138,7 +139,7 @@ public class OperationsCenterAgentDataExtractor {
 	public String getDomain() {
 		String domain = "Default";
 		ConfigurationContextService configurationContextService =
-				OperationsCenterAgentDataHolder.getInstance().getConfigurationContextService();
+				OCAgentDataHolder.getInstance().getConfigurationContextService();
 		if (configurationContextService != null) {
 			ClusteringAgent clusteringAgent = configurationContextService.getServerConfigContext().
 					getAxisConfiguration().getClusteringAgent();
@@ -155,7 +156,7 @@ public class OperationsCenterAgentDataExtractor {
 	public String getSubDomain() {
 		String subDomain = "Default";
 		ConfigurationContextService configurationContextService =
-				OperationsCenterAgentDataHolder.getInstance().getConfigurationContextService();
+				OCAgentDataHolder.getInstance().getConfigurationContextService();
 		if (configurationContextService != null) {
 			ClusteringAgent clusteringAgent = configurationContextService.getServerConfigContext().
 					getAxisConfiguration().getClusteringAgent();
@@ -225,7 +226,7 @@ public class OperationsCenterAgentDataExtractor {
 
 	public String getServerUpTime() {
 		ServerAdmin serverAdmin =
-				(ServerAdmin) OperationsCenterAgentDataHolder.getInstance().getServerAdmin();
+				(ServerAdmin) OCAgentDataHolder.getInstance().getServerAdmin();
 		if (serverAdmin != null) {
 			try {
 				ServerUpTime serverUptime = serverAdmin.getServerData().getServerUpTime();
@@ -248,7 +249,7 @@ public class OperationsCenterAgentDataExtractor {
 
 	public String getServerStartTime() {
 		ServerAdmin serverAdmin =
-				(ServerAdmin) OperationsCenterAgentDataHolder.getInstance().getServerAdmin();
+				(ServerAdmin) OCAgentDataHolder.getInstance().getServerAdmin();
 		if (serverAdmin != null) {
 			try {
 				return serverAdmin.getServerData().getServerStartTime();
@@ -268,32 +269,14 @@ public class OperationsCenterAgentDataExtractor {
 		return operatingSystemMXBean.getSystemLoadAverage();
 	}
 
-	public int getAllRequestCount() {
-		int reqCount = 0;
-		if (OperationsCenterAgentDataHolder.getInstance().getStatisticsAdmin() != null) {
-			try {
-				reqCount = OperationsCenterAgentDataHolder.getInstance().getStatisticsAdmin()
-				                                          .getSystemRequestCount();
-			} catch (AxisFault e) {
-				logger.error("Failed to retrieve server stat count.", e);
-				reqCount = 0;
-			}
+	public Tenant[] getAllTenants() {
+		Tenant[] tenants = null;
+		try {
+			tenants =  OCAgentDataHolder.getInstance().getRealmService().getTenantManager().getAllTenants();
+		} catch (UserStoreException e) {
+			logger.info("problem while gettiing all tenants", e);
 		}
-		return reqCount;
-	}
-
-	public int getAllResponseCount() {
-		int resCount = 0;
-		if (OperationsCenterAgentDataHolder.getInstance().getStatisticsAdmin() != null) {
-			try {
-				resCount = OperationsCenterAgentDataHolder.getInstance().getStatisticsAdmin()
-				                                          .getSystemResponseCount();
-			} catch (AxisFault e) {
-				logger.error("Failed to retrieve server stat count.", e);
-				resCount = 0;
-			}
-		}
-		return resCount;
+		return tenants;
 	}
 
 	public List<String> getPatches() {

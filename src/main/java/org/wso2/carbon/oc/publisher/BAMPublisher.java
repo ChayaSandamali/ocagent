@@ -21,17 +21,17 @@ import org.slf4j.LoggerFactory;
 import org.wso2.carbon.databridge.agent.thrift.DataPublisher;
 import org.wso2.carbon.databridge.agent.thrift.exception.AgentException;
 import org.wso2.carbon.databridge.commons.exception.*;
-import org.wso2.carbon.oc.internal.OperationsCenterAgentUtils;
-import org.wso2.carbon.oc.internal.messages.MessageHelper;
+import org.wso2.carbon.oc.internal.OCConstants;
+import org.wso2.carbon.oc.internal.messages.MessageUtil;
 import org.wso2.carbon.utils.CarbonUtils;
 
 import java.net.MalformedURLException;
 import java.util.Map;
 
 /**
- * Created by noelyahan on 11/10/14.
+ * Allows publish data to bam as payload data stream
  */
-public class BAMPublisher implements IPublisher{
+public class BAMPublisher implements OCDataPublisher {
     static Logger logger =  LoggerFactory.getLogger(BAMPublisher.class);
 
 	//config attributes
@@ -39,7 +39,6 @@ public class BAMPublisher implements IPublisher{
     private String password;
     private String defaultHostName;
     private String thriftPort;
-    private long initialDelay;
     private long interval;
 	private boolean isRegistered = false;
 
@@ -51,15 +50,15 @@ public class BAMPublisher implements IPublisher{
 
 
 
-    public BAMPublisher() {
+    public BAMPublisher(Map<String, String> configMap) {
         //load xml config
-        Map<String, String> configMap = OperationsCenterAgentUtils.getPublisher(BAMPublisher.class.getCanonicalName());
-        this.username = configMap.get(OperationsCenterAgentUtils.USERNAME);
-        this.password = configMap.get(OperationsCenterAgentUtils.PASSWORD);
-        this.defaultHostName = configMap.get(OperationsCenterAgentUtils.REPORT_HOST_NAME);
-        this.thriftPort = configMap.get(OperationsCenterAgentUtils.THRIFT_PORT);
-        this.initialDelay = Long.parseLong(configMap.get(OperationsCenterAgentUtils.DELAY));
-        this.interval = Long.parseLong(configMap.get(OperationsCenterAgentUtils.INTERVAL));
+        /*Map<String, String> configMap = OCAgentUtils
+		        .getPublisher(BAMPublisher.class.getCanonicalName());*/
+        this.username = configMap.get(OCConstants.USERNAME);
+        this.password = configMap.get(OCConstants.PASSWORD);
+        this.defaultHostName = configMap.get(OCConstants.REPORT_HOST_NAME);
+        this.thriftPort = configMap.get(OCConstants.THRIFT_PORT);
+        this.interval = Long.parseLong(configMap.get(OCConstants.INTERVAL));
 
         try {
             synchronized (BAMPublisher.class) {
@@ -71,30 +70,30 @@ public class BAMPublisher implements IPublisher{
             }
 
         } catch (MalformedURLException e) {
-           logger.info(e.getMessage());
+           logger.info(e.getMessage(), e);
         } catch (AgentException e) {
-            logger.info(e.getMessage());
+	        logger.info("BAMPublisher connection down", e);
         } catch (AuthenticationException e) {
-            logger.info(e.getMessage());
+	        logger.info(e.getMessage(), e);
         } catch (TransportException e) {
-            logger.info(e.getMessage());
+	        logger.info(e.getMessage(), e);
         }
         logger.info("BAMPublisher init done");
     }
+
+
 
 	/**
 	 *
 	 * @param streamDef - stream definition json string event > payload
 	 * @return String - unique generated stream id
 	 */
-    private String getStreamId(String streamDef) {
+    private String getStreamId(String streamDef) throws AgentException{
         String streamId = null;
 
             try {
                 streamId = dataPublisher.defineStream(streamDef);
-            } catch (AgentException e) {
-                logger.info(e.getMessage(), e);
-            } catch (MalformedStreamDefinitionException e) {
+            }  catch (MalformedStreamDefinitionException e) {
 	            logger.info(e.getMessage(), e);
             } catch (StreamDefinitionException e) {
 	            logger.info(e.getMessage(), e);
@@ -111,18 +110,17 @@ public class BAMPublisher implements IPublisher{
 	 * @return String - register message stream definition json
 	 */
     private String getRegisterStreamDef() {
-        return "{" +
-                "  'name':'"+REGISTER_STREAM+"'," +
-                " 'version':'" + 1.1 + "'," +
-                "  'description': 'Storing OC server registration requests'," +
-                "  'tags':['register', 'request', 'reg_request']," +
-                "  'metaData':[" +
-                "               " +
-                "  ]," +
-                "  'payloadData':[" +
-                MessageHelper.getBAMRegisterPayloadDef() +
-                "  ]" +
-                "}";
+	    return "{" +
+	           "  'name':'"+REGISTER_STREAM+"'," +
+	           "  'description': 'Storing OC server register request'," +
+	           "  'tags':['update', 'request', 'up_request']," +
+	           "  'metaData':[" +
+	           "               " +
+	           "  ]," +
+	           "  'payloadData':[" +
+	           MessageUtil.getBAMRegisterPayloadDef() +
+	           "  ]" +
+	           "}";
     }
 
 	/**
@@ -138,7 +136,7 @@ public class BAMPublisher implements IPublisher{
                 "               " +
                 "  ]," +
                 "  'payloadData':[" +
-                    MessageHelper.getBAMSyncPayloadDef() +
+                    MessageUtil.getBAMSyncPayloadDef() +
                 "  ]" +
                 "}";
     }
@@ -149,23 +147,28 @@ public class BAMPublisher implements IPublisher{
         System.setProperty("javax.net.ssl.trustStorePassword", "wso2carbon");
     }
 
+	@Override public void init() {
 
-    @Override
+	}
+
+	@Override
     public void publish() {
 
         logger.info("==========wso2-bam==========reporting");
 	    try {
 
 	        if(!isRegistered) {
-		        dataPublisher.publish(getStreamId(getRegisterStreamDef()), null, null, MessageHelper.getBAMRegistrationRequest());
+		        dataPublisher.publish(getStreamId(getRegisterStreamDef()), null, null, MessageUtil
+				        .getBAMRegistrationRequest());
 		        isRegistered = true;
 	        }else{
-		        dataPublisher.publish(getStreamId(getSynchronizeStreamDef()), null, null, MessageHelper.getBAMSynchronizationRequest());
+		        dataPublisher.publish(getStreamId(getSynchronizeStreamDef()), null, null, MessageUtil
+				        .getBAMSynchronizationRequest());
 	        }
 
+
         } catch (AgentException e) {
-	        logger.info("BAM connection gone");
-            logger.info(e.getMessage());
+	        logger.info("BAMPublisher connection down", e);
         }
     }
 
@@ -176,10 +179,7 @@ public class BAMPublisher implements IPublisher{
 		dataPublisher.stop();
 	}
 
-    @Override
-    public long getInitialDelay() {
-        return initialDelay;
-    }
+
 
     @Override
     public long getInterval() {

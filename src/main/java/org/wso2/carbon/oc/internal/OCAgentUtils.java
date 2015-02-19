@@ -24,40 +24,31 @@ import org.wso2.carbon.server.admin.service.ServerAdmin;
 import java.util.*;
 
 /*
-    Associate with carbon.xml [Publisher] data
+    Provide access to configurations in carbon.xml [Publisher] data
+    Allows to invoke commands in server restart, shutdown
 */
 
-public class OperationsCenterAgentUtils {
-	private static Logger logger = LoggerFactory.getLogger(OperationsCenterAgentUtils.class);
+public class OCAgentUtils {
+	private static Logger logger = LoggerFactory.getLogger(OCAgentUtils.class);
 
-	//access from outside
-	public static final String IS_ENABLE = "Enable";
-	public static final String CLASS_PATH = "Class";
-	public static final String REPORT_URL = "ReportURL";
-	public static final String REPORT_HOST_NAME = "ReportHostName";
-	public static final String REPORT_PORT = "ReportHttpPort";
-	public static final String THRIFT_PORT = "ThriftPort";
-	public static final String THRIFT_SSL_PORT = "ThriftSSLPort";
-	public static final String USERNAME = "Username";
-	public static final String PASSWORD = "Password";
-	public static final String DELAY = "Reporting.InitialDelay";
-	public static final String INTERVAL = "Reporting.Interval";
+	//move to const class
+
 
 	// mapping purpose
 	private static final List<String> ALLOWED_PUBLISHER_ATTRIBUTES = Arrays
-			.asList(IS_ENABLE,
-			        CLASS_PATH,
-			        REPORT_URL,
-			        REPORT_HOST_NAME,
-			        REPORT_PORT,
-			        THRIFT_PORT,
-			        THRIFT_SSL_PORT,
-			        USERNAME,
-			        PASSWORD,
-			        DELAY,
-			        INTERVAL);
+			.asList(OCConstants.IS_ENABLE,
+			        OCConstants.CLASS_PATH,
+			        OCConstants.REPORT_URL,
+			        OCConstants.REPORT_HOST_NAME,
+			        OCConstants.REPORT_PORT,
+			        OCConstants.THRIFT_PORT,
+			        OCConstants.THRIFT_SSL_PORT,
+			        OCConstants.USERNAME,
+			        OCConstants.PASSWORD,
+			        OCConstants.DELAY,
+			        OCConstants.INTERVAL);
 
-	//
+
 	private static final List<String> ALLOWED_CLASSES = Arrays
 			.asList("org.wso2.carbon.oc.publisher.RTPublisher",
 			        "org.wso2.carbon.oc.publisher.MBPublisher",
@@ -68,11 +59,13 @@ public class OperationsCenterAgentUtils {
 			        "MBPublisher",
 			        "BAMPublisher");
 
-	private static Map<String, Map<String, String>> configurations;
+	//var name
+	private static Map<String, Map<String, String>> ocConfigurations;
+
 
 	public static ServerConfigurationService getServerConfigurationService() {
 		ServerConfigurationService serverConfigurationService =
-				OperationsCenterAgentDataHolder.getInstance().getServerConfigurationService();
+				OCAgentDataHolder.getInstance().getServerConfigurationService();
 		if (serverConfigurationService == null) {
 			throw new RuntimeException("ServerConfigurationService is unavailable");
 		}
@@ -84,10 +77,10 @@ public class OperationsCenterAgentUtils {
 	 */
 	private static Map<String, Map<String, String>> getConfigurations() {
 		ServerConfigurationService serverConfigurationService =
-				OperationsCenterAgentUtils.getServerConfigurationService();
+				OCAgentUtils.getServerConfigurationService();
 
-		if (configurations == null) {
-			configurations = new HashMap<String, Map<String, String>>();
+		if (ocConfigurations == null) {
+			ocConfigurations = new HashMap<String, Map<String, String>>();
 			for (String publisher : ALLOWED_PUBLISHERS) {
 				String publisherPath = "Publishers." + publisher;
 
@@ -99,23 +92,23 @@ public class OperationsCenterAgentUtils {
 						configMap.put(attr, value);
 				}
 
-				configurations.put(configMap.get(CLASS_PATH), configMap);
+				ocConfigurations.put(configMap.get(OCConstants.CLASS_PATH), configMap);
 			}
 		}
 
-		return configurations;
+		return ocConfigurations;
 	}
 
 	/**
-	 * @return list of class path
+	 * @return List<String> - list of class paths
 	 */
 	public static List<String> getActivePublishers() {
 		List<String> activePublishers = new ArrayList<String>();
 
 		for (int i = 0; i < ALLOWED_CLASSES.size(); i++) {
 			Map<String, String> configMap =
-					OperationsCenterAgentUtils.getConfigurations().get(ALLOWED_CLASSES.get(i));
-			if (Boolean.parseBoolean(configMap.get(IS_ENABLE))) {
+					OCAgentUtils.getConfigurations().get(ALLOWED_CLASSES.get(i));
+			if (Boolean.parseBoolean(configMap.get(OCConstants.IS_ENABLE))) {
 				activePublishers.add(ALLOWED_CLASSES.get(i));
 			}
 		}
@@ -127,7 +120,7 @@ public class OperationsCenterAgentUtils {
 	 * @return particular xml map
 	 */
 	public static Map<String, String> getPublisher(String classPath) {
-		return OperationsCenterAgentUtils.getConfigurations().get(classPath);
+		return OCAgentUtils.getConfigurations().get(classPath);
 	}
 
 	/**
@@ -135,7 +128,7 @@ public class OperationsCenterAgentUtils {
 	 */
 	public static void performAction(String command) {
 		ServerAdmin serverAdmin =
-				(ServerAdmin) OperationsCenterAgentDataHolder.getInstance().getServerAdmin();
+				(ServerAdmin) OCAgentDataHolder.getInstance().getServerAdmin();
 		if (serverAdmin != null) {
 			try {
 				if ("RESTART".equals(command)) {

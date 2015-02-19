@@ -19,6 +19,8 @@ package org.wso2.carbon.oc.internal.messages;
 /**
  * Created by jayanga on 11/10/14.
  */
+
+//remove the wrapper
 public class OCSynchronizationRequest {
 	private SynchronizationRequest synchronizationRequest;
 

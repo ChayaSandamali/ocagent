@@ -18,8 +18,8 @@ package org.wso2.carbon.oc.publisher;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.wso2.carbon.oc.internal.OperationsCenterAgentUtils;
-import org.wso2.carbon.oc.internal.messages.MessageHelper;
+import org.wso2.carbon.oc.internal.OCConstants;
+import org.wso2.carbon.oc.internal.messages.MessageUtil;
 
 import javax.jms.*;
 import javax.naming.Context;
@@ -29,9 +29,9 @@ import java.util.Map;
 import java.util.Properties;
 
 /**
- * intro
+ * Allows publish data to message broker endpoint
  */
-public class MBPublisher implements IPublisher {
+public class MBPublisher implements OCDataPublisher {
 
 	private static Logger logger = LoggerFactory.getLogger(MBPublisher.class);
 
@@ -54,26 +54,25 @@ public class MBPublisher implements IPublisher {
 	private String defaultPort;
 	private String username;
 	private String password;
-	private long initialDelay;
 	private long interval;
 
 	private boolean isRegistered = false;
 
-	public MBPublisher() {
+	public MBPublisher(Map<String, String> configMap) {
 		//get set config
-		Map<String, String> configMap =
-				OperationsCenterAgentUtils.getPublisher(MBPublisher.class.getCanonicalName());
-		this.username = configMap.get(OperationsCenterAgentUtils.USERNAME);
-		this.password = configMap.get(OperationsCenterAgentUtils.PASSWORD);
+		/*Map<String, String> configMap =
+				OCAgentUtils.getPublisher(MBPublisher.class.getCanonicalName());*/
+		this.username = configMap.get(OCConstants.USERNAME);
+		this.password = configMap.get(OCConstants.PASSWORD);
 		this.defaultHostName =
-				configMap.get(OperationsCenterAgentUtils.REPORT_HOST_NAME);
-		this.defaultPort = configMap.get(OperationsCenterAgentUtils.REPORT_PORT);
-		this.initialDelay =
-				Long.parseLong(configMap.get(OperationsCenterAgentUtils.DELAY));
+				configMap.get(OCConstants.REPORT_HOST_NAME);
+		this.defaultPort = configMap.get(OCConstants.REPORT_PORT);
+
 		this.interval =
-				Long.parseLong(configMap.get(OperationsCenterAgentUtils.INTERVAL));
+				Long.parseLong(configMap.get(OCConstants.INTERVAL));
 		logger.info("MBPublisher init done");
 	}
+
 
 	/**
 	 *
@@ -105,10 +104,14 @@ public class MBPublisher implements IPublisher {
 			queueSession.close();
 			queueConnection.close();
 		} catch (JMSException e) {
-			logger.info("JMS error", e);
+			logger.info("MBPublisher connection down", e);
 		} catch (NamingException e) {
 			logger.info("Naming error", e);
 		}
+
+	}
+
+	@Override public void init() {
 
 	}
 
@@ -116,17 +119,14 @@ public class MBPublisher implements IPublisher {
 	public void publish() {
 		logger.info("======wso2-mb===========reporting");
 		if (!isRegistered) {
-			sendMessages(REG_QUEUE, MessageHelper.getMBRegistrationRequest());
+			sendMessages(REG_QUEUE, MessageUtil.getMBRegistrationRequest());
 			isRegistered = true;
 		} else {
-			sendMessages(SYNC_QUEUE, MessageHelper.getMBSynchronizationRequest());
+			sendMessages(SYNC_QUEUE, MessageUtil.getMBSynchronizationRequest());
 		}
+
 	}
 
-	@Override
-	public long getInitialDelay() {
-		return initialDelay;
-	}
 
 	@Override
 	public long getInterval() {
