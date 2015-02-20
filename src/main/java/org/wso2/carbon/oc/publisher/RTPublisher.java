@@ -70,8 +70,6 @@ public class RTPublisher implements OCDataPublisher {
 
     public RTPublisher(Map<String, String> configMap) {
 	    // get set config
-//        Map<String, String> configMap = OCAgentUtils
-//		        .getPublisher(RTPublisher.class.getCanonicalName());
         String username = configMap.get(OCConstants.USERNAME);
         String password = configMap.get(OCConstants.PASSWORD);
         this.ocUrl = configMap.get(OCConstants.REPORT_URL);

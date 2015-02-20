@@ -75,7 +75,7 @@ public class MessageUtil {
 	 *
 	 * @return String - message broker registration message
 	 */
-	public static String getMBRegistrationRequest() {
+	public static String getRegistrationPayload() {
 		String message = null;
 
 		OCEvent event = new OCEvent();
@@ -94,7 +94,7 @@ public class MessageUtil {
 	 *
 	 * @return String - message broker synchronization message
 	 */
-	public static String getMBSynchronizationRequest() {
+	public static String getSynchronizationPayload() {
 		String message = null;
 
 		OCEvent event = new OCEvent();

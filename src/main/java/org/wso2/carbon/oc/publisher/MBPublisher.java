@@ -60,8 +60,6 @@ public class MBPublisher implements OCDataPublisher {
 
 	public MBPublisher(Map<String, String> configMap) {
 		//get set config
-		/*Map<String, String> configMap =
-				OCAgentUtils.getPublisher(MBPublisher.class.getCanonicalName());*/
 		this.username = configMap.get(OCConstants.USERNAME);
 		this.password = configMap.get(OCConstants.PASSWORD);
 		this.defaultHostName =
@@ -119,10 +117,10 @@ public class MBPublisher implements OCDataPublisher {
 	public void publish() {
 		logger.info("======wso2-mb===========reporting");
 		if (!isRegistered) {
-			sendMessages(REG_QUEUE, MessageUtil.getMBRegistrationRequest());
+			sendMessages(REG_QUEUE, MessageUtil.getRegistrationPayload());
 			isRegistered = true;
 		} else {
-			sendMessages(SYNC_QUEUE, MessageUtil.getMBSynchronizationRequest());
+			sendMessages(SYNC_QUEUE, MessageUtil.getSynchronizationPayload());
 		}
 
 	}

@@ -52,8 +52,6 @@ public class BAMPublisher implements OCDataPublisher {
 
     public BAMPublisher(Map<String, String> configMap) {
         //load xml config
-        /*Map<String, String> configMap = OCAgentUtils
-		        .getPublisher(BAMPublisher.class.getCanonicalName());*/
         this.username = configMap.get(OCConstants.USERNAME);
         this.password = configMap.get(OCConstants.PASSWORD);
         this.defaultHostName = configMap.get(OCConstants.REPORT_HOST_NAME);
