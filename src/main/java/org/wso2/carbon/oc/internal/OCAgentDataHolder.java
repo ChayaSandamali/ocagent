@@ -24,9 +24,9 @@ import org.wso2.carbon.statistics.services.StatisticsAdmin;
 import org.wso2.carbon.user.core.service.RealmService;
 import org.wso2.carbon.utils.ConfigurationContextService;
 
-public class OperationsCenterAgentDataHolder {
-	private static OperationsCenterAgentDataHolder instance = new OperationsCenterAgentDataHolder();
-	private static Logger logger = LoggerFactory.getLogger(OperationsCenterAgentDataHolder.class);
+public class OCAgentDataHolder {
+	private static OCAgentDataHolder instance = new OCAgentDataHolder();
+	private static Logger logger = LoggerFactory.getLogger(OCAgentDataHolder.class);
 
 	//    private OperationsCenterConnector operationsCenterConnector;
 	private ConfigurationContextService configurationContextService;
@@ -36,11 +36,11 @@ public class OperationsCenterAgentDataHolder {
 	private StatisticsAdmin statisticsAdmin;    // request, response count
 	private int serverId;
 
-	private OperationsCenterAgentDataHolder() {
+	private OCAgentDataHolder() {
 	    /* No initializations needed for the moment. */
 	}
 
-	public static OperationsCenterAgentDataHolder getInstance() {
+	public static OCAgentDataHolder getInstance() {
 		return instance;
 	}
 

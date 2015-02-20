@@ -18,17 +18,18 @@ package org.wso2.carbon.oc.internal;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.wso2.carbon.oc.publisher.IPublisher;
+import org.wso2.carbon.oc.publisher.OCDataPublisher;
 
 /**
  * This class allows to report / publish data periodically
  */
 
-public class OperationsCenterAgentReporterTask implements Runnable {
-	private static Logger logger = LoggerFactory.getLogger(OperationsCenterAgentReporterTask.class);
-	private IPublisher operationsCenterConnector;
+public class OCAgentReporterTask implements Runnable {
+	private static Logger logger = LoggerFactory.getLogger(OCAgentReporterTask.class);
+	//change
+	private OCDataPublisher operationsCenterConnector;
 
-	public OperationsCenterAgentReporterTask(IPublisher operationsCenterConnector) {
+	public OCAgentReporterTask(OCDataPublisher operationsCenterConnector) {
 		this.operationsCenterConnector = operationsCenterConnector;
 	}
 

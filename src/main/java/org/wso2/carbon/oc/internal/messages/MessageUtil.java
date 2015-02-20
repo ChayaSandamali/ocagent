@@ -20,10 +20,8 @@ import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.wso2.carbon.oc.internal.OperationsCenterAgentDataExtractor;
-import org.wso2.carbon.oc.internal.OperationsCenterAgentDataHolder;
+import org.wso2.carbon.oc.internal.OCAgentDataExtractor;
 import org.wso2.carbon.oc.internal.exceptions.ParameterUnavailableException;
-import org.wso2.carbon.user.api.UserStoreException;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -35,8 +33,8 @@ import java.util.Map;
  * This helps to build appropriate messages according to different
  * publishers
  */
-public class MessageHelper {
-	private static Logger logger = LoggerFactory.getLogger(MessageHelper.class);
+public class MessageUtil {
+	private static Logger logger = LoggerFactory.getLogger(MessageUtil.class);
 	private static ObjectMapper objectMapper = new ObjectMapper();  // for json conversion
 	private static String bamRegisterPayloadDef;                    // BAM registration message payload definition
 	private static String bamSyncPayloadDef;                        // BAM synchronization message payload definition
@@ -49,7 +47,7 @@ public class MessageHelper {
 		String message = null;
 
 		try {
-			message = objectMapper.writeValueAsString(ocRegistrationRequestBuilder());
+			message = objectMapper.writeValueAsString(MessageUtil.getOCRegistrationRequest());
 
 		} catch (IOException e) {
 			logger.error("Failed to get JSON String from ocSynchronizationRequest", e);
@@ -65,7 +63,7 @@ public class MessageHelper {
 		String message = null;
 
 		try {
-			message = objectMapper.writeValueAsString(ocSynchronizationRequestBuilder());
+			message = objectMapper.writeValueAsString(MessageUtil.getOCSynchronizationRequest());
 
 		} catch (IOException e) {
 			logger.error("Failed to get JSON String from ocSynchronizationRequest", e);
@@ -77,11 +75,11 @@ public class MessageHelper {
 	 *
 	 * @return String - message broker registration message
 	 */
-	public static String getMBRegistrationRequest() {
+	public static String getRegistrationPayload() {
 		String message = null;
 
 		OCEvent event = new OCEvent();
-		event.setPayload(ocRegistrationRequestBuilder().getRegistrationRequest());
+		event.setPayload(MessageUtil.getOCRegistrationRequest().getRegistrationRequest());
 
 		try {
 			message = objectMapper.writeValueAsString(event);
@@ -96,11 +94,11 @@ public class MessageHelper {
 	 *
 	 * @return String - message broker synchronization message
 	 */
-	public static String getMBSynchronizationRequest() {
+	public static String getSynchronizationPayload() {
 		String message = null;
 
 		OCEvent event = new OCEvent();
-		event.setPayload(ocSynchronizationRequestBuilder().getSynchronizationRequest());
+		event.setPayload(MessageUtil.getOCSynchronizationRequest().getSynchronizationRequest());
 
 		try {
 			message = objectMapper.writeValueAsString(event);
@@ -117,7 +115,7 @@ public class MessageHelper {
 	 * @return Object[] - BAM registration message
 	 */
 	public static Object[] getBAMRegistrationRequest() {
-		RegistrationRequest r = ocRegistrationRequestBuilder().getRegistrationRequest();
+		RegistrationRequest r = MessageUtil.getOCRegistrationRequest().getRegistrationRequest();
 		return new Object[] { r.getIp(), r.getServerName(), r.getServerVersion(), r.getDomain(),
 		                      r.getSubDomain(), r.getAdminServiceUrl(), r.getStartTime(), r.getOs(),
 		                      r.getTotalMemory(), Double.parseDouble("" + r.getCpuCount()),
@@ -129,7 +127,7 @@ public class MessageHelper {
 	 * @return Object[] - BAM synchronization message
 	 */
 	public static Object[] getBAMSynchronizationRequest() {
-		SynchronizationRequest s = ocSynchronizationRequestBuilder().getSynchronizationRequest();
+		SynchronizationRequest s = MessageUtil.getOCSynchronizationRequest().getSynchronizationRequest();
 		return new Object[] { s.getFreeMemory(), s.getIdleCpuUsage(), s.getSystemCpuUsage(),
 		                      s.getUserCpuUsage(),
 		                      s.getAdminServiceUrl(), s.getServerUpTime(),
@@ -148,7 +146,8 @@ public class MessageHelper {
 		if (bamRegisterPayloadDef == null) {
 			try {
 				root = objectMapper
-						.readTree(objectMapper.writeValueAsString(ocRegistrationRequestBuilder()));
+						.readTree(objectMapper.writeValueAsString(
+								MessageUtil.getOCRegistrationRequest()));
 				Map<String, String> flat = new HashMap<String, String>();
 				StringBuilder streamIdBuilder = new StringBuilder();
 				bamRegisterPayloadDef = traverse(root, flat, streamIdBuilder);
@@ -170,7 +169,7 @@ public class MessageHelper {
 		if (bamSyncPayloadDef == null) {
 			try {
 				root = objectMapper.readTree(
-						objectMapper.writeValueAsString(ocSynchronizationRequestBuilder()));
+						objectMapper.writeValueAsString(MessageUtil.getOCSynchronizationRequest()));
 				Map<String, String> flat = new HashMap<String, String>();
 				StringBuilder streamIdBuilder = new StringBuilder();
 				bamSyncPayloadDef = traverse(root, flat, streamIdBuilder);
@@ -241,38 +240,38 @@ public class MessageHelper {
 	 * and fill with appropriate data
 	 * @return OCRegistrationRequest - static data / meta data from server
 	 */
-	private static OCRegistrationRequest ocRegistrationRequestBuilder() {
+	private static OCRegistrationRequest getOCRegistrationRequest() {
 		OCRegistrationRequest ocRegistrationRequest = new OCRegistrationRequest();
 
 		try {
 			ocRegistrationRequest.getRegistrationRequest().
-					setIp(OperationsCenterAgentDataExtractor.getInstance().getLocalIp());
+					setIp(OCAgentDataExtractor.getInstance().getLocalIp());
 			ocRegistrationRequest.getRegistrationRequest().
-					setServerName(OperationsCenterAgentDataExtractor.getInstance().getServerName());
+					setServerName(OCAgentDataExtractor.getInstance().getServerName());
 			ocRegistrationRequest.getRegistrationRequest().
 					setServerVersion(
-							OperationsCenterAgentDataExtractor.getInstance().getServerVersion());
+							OCAgentDataExtractor.getInstance().getServerVersion());
 			ocRegistrationRequest.getRegistrationRequest().
-					setDomain(OperationsCenterAgentDataExtractor.getInstance().getDomain());
+					setDomain(OCAgentDataExtractor.getInstance().getDomain());
 			ocRegistrationRequest.getRegistrationRequest().
-					setSubDomain(OperationsCenterAgentDataExtractor.getInstance().getSubDomain());
+					setSubDomain(OCAgentDataExtractor.getInstance().getSubDomain());
 			ocRegistrationRequest.getRegistrationRequest().
 					setAdminServiceUrl(
-							OperationsCenterAgentDataExtractor.getInstance().getAdminServiceUrl());
+							OCAgentDataExtractor.getInstance().getAdminServiceUrl());
 			ocRegistrationRequest.getRegistrationRequest().
 					setStartTime(
-							OperationsCenterAgentDataExtractor.getInstance().getServerStartTime());
+							OCAgentDataExtractor.getInstance().getServerStartTime());
 			ocRegistrationRequest.getRegistrationRequest().
-					setOs(OperationsCenterAgentDataExtractor.getInstance().getOs());
+					setOs(OCAgentDataExtractor.getInstance().getOs());
 			ocRegistrationRequest.getRegistrationRequest().
 					setTotalMemory(
-							OperationsCenterAgentDataExtractor.getInstance().getTotalMemory());
+							OCAgentDataExtractor.getInstance().getTotalMemory());
 			ocRegistrationRequest.getRegistrationRequest().
-					setCpuCount(OperationsCenterAgentDataExtractor.getInstance().getCpuCount());
+					setCpuCount(OCAgentDataExtractor.getInstance().getCpuCount());
 			ocRegistrationRequest.getRegistrationRequest().
-					setCpuSpeed(OperationsCenterAgentDataExtractor.getInstance().getCpuSpeed());
+					setCpuSpeed(OCAgentDataExtractor.getInstance().getCpuSpeed());
 
-			List<String> patches = OperationsCenterAgentDataExtractor.getInstance().getPatches();
+			List<String> patches = OCAgentDataExtractor.getInstance().getPatches();
 			if (patches.size() > 0) {
 				ocRegistrationRequest.getRegistrationRequest().setPatches(patches);
 			}
@@ -289,41 +288,38 @@ public class MessageHelper {
 	 * and fill with appropriate data
 	 * @return OCRegistrationRequest - dynamic data from server
 	 */
-	private static OCSynchronizationRequest ocSynchronizationRequestBuilder() {
+	private static OCSynchronizationRequest getOCSynchronizationRequest() {
 		OCSynchronizationRequest ocSynchronizationRequest = new OCSynchronizationRequest();
 
 		try {
 			ocSynchronizationRequest.getSynchronizationRequest().
 					setAdminServiceUrl(
-							OperationsCenterAgentDataExtractor.getInstance().getAdminServiceUrl());
+							OCAgentDataExtractor.getInstance().getAdminServiceUrl());
 			ocSynchronizationRequest.getSynchronizationRequest().
 					setServerUpTime(
-							OperationsCenterAgentDataExtractor.getInstance().getServerUpTime());
+							OCAgentDataExtractor.getInstance().getServerUpTime());
 			ocSynchronizationRequest.getSynchronizationRequest().
 					setThreadCount(
-							OperationsCenterAgentDataExtractor.getInstance().getThreadCount());
+							OCAgentDataExtractor.getInstance().getThreadCount());
 			ocSynchronizationRequest.getSynchronizationRequest().
-					setFreeMemory(OperationsCenterAgentDataExtractor.getInstance().getFreeMemory());
+					setFreeMemory(OCAgentDataExtractor.getInstance().getFreeMemory());
 			ocSynchronizationRequest.getSynchronizationRequest().
 					setIdleCpuUsage(
-							OperationsCenterAgentDataExtractor.getInstance().getIdelCpuUsage());
+							OCAgentDataExtractor.getInstance().getIdelCpuUsage());
 			ocSynchronizationRequest.getSynchronizationRequest().
 					setSystemCpuUsage(
-							OperationsCenterAgentDataExtractor.getInstance().getSystemCpuUsage());
+							OCAgentDataExtractor.getInstance().getSystemCpuUsage());
 			ocSynchronizationRequest.getSynchronizationRequest().
 					setUserCpuUsage(
-							OperationsCenterAgentDataExtractor.getInstance().getUserCpuUsage());
+							OCAgentDataExtractor.getInstance().getUserCpuUsage());
 			ocSynchronizationRequest.getSynchronizationRequest().
-					setSystemLoadAverage(OperationsCenterAgentDataExtractor.getInstance()
+					setSystemLoadAverage(OCAgentDataExtractor.getInstance()
 					                                                       .getSystemLoadAverage());
 			ocSynchronizationRequest.getSynchronizationRequest().
-					setTenants(OperationsCenterAgentDataHolder.getInstance().getRealmService()
-					                                          .getTenantManager().getAllTenants());
+					setTenants(OCAgentDataExtractor.getInstance().getAllTenants());
 
 		} catch (ParameterUnavailableException e) {
 			logger.error("Failed to read synchronization parameter. ", e);
-		} catch (UserStoreException e) {
-			logger.info(e.getMessage(), e);
 		}
 		return ocSynchronizationRequest;
 	}

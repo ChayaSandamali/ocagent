@@ -36,7 +36,7 @@ public class OCEvent {
 		return event;
 	}
 
-	public void setPayload(IMessage payload) {
+	public void setPayload(Messager payload) {
 		this.event.setPayload(payload);
 	}
 }

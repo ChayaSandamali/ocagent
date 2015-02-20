@@ -17,24 +17,24 @@
 package org.wso2.carbon.oc.publisher;
 
 /**
- * >>
+ *
  */
-public interface IPublisher {
+public interface OCDataPublisher {
+
+	void init();
 
 	/**
 	 * publish data to endpoint/resource
 	 */
+	//parse
     void publish();
 
-	/**
-	 *
-	 * @return delay time mili-seconds - data publishing startup delay
-	 */
-    long getInitialDelay();
+
 
 	/**
 	 *
 	 * @return interval time mili-seconds - periodical data publishing time
 	 */
+	//
     long getInterval();
 }

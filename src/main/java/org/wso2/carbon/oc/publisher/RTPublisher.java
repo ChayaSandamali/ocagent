@@ -28,9 +28,10 @@ import org.apache.commons.lang.StringUtils;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.wso2.carbon.oc.internal.OperationsCenterAgentDataHolder;
-import org.wso2.carbon.oc.internal.OperationsCenterAgentUtils;
-import org.wso2.carbon.oc.internal.messages.MessageHelper;
+import org.wso2.carbon.oc.internal.OCAgentDataHolder;
+import org.wso2.carbon.oc.internal.OCAgentUtils;
+import org.wso2.carbon.oc.internal.OCConstants;
+import org.wso2.carbon.oc.internal.messages.MessageUtil;
 import org.wso2.carbon.oc.internal.messages.OCRegistrationResponse;
 import org.wso2.carbon.oc.internal.messages.OCSynchronizationResponse;
 
@@ -39,9 +40,10 @@ import java.io.UnsupportedEncodingException;
 import java.util.Map;
 
 /**
- * intro
+ * Allows to publish real time data to oc web app
+ * This is the default publisher
  */
-public class RTPublisher implements IPublisher {
+public class RTPublisher implements OCDataPublisher {
 
 
 
@@ -59,7 +61,6 @@ public class RTPublisher implements IPublisher {
     private boolean isRegistered = false;
 
     private String ocUrl;
-    private long initialDelay;
     private long interval;
 
     private static final String REGISTRATION_PATH = "/api/register";
@@ -67,14 +68,13 @@ public class RTPublisher implements IPublisher {
     private static final String CONTENT_TYPE = "application/json";
     private static final String CHARACTER_SET = "UTF-8";
 
-    public RTPublisher() {
+    public RTPublisher(Map<String, String> configMap) {
 	    // get set config
-        Map<String, String> configMap = OperationsCenterAgentUtils.getPublisher(RTPublisher.class.getCanonicalName());
-        String username = configMap.get(OperationsCenterAgentUtils.USERNAME);
-        String password = configMap.get(OperationsCenterAgentUtils.PASSWORD);
-        this.ocUrl = configMap.get(OperationsCenterAgentUtils.REPORT_URL);
-        this.initialDelay = Long.parseLong(configMap.get(OperationsCenterAgentUtils.DELAY));
-        this.interval = Long.parseLong(configMap.get(OperationsCenterAgentUtils.INTERVAL));
+        String username = configMap.get(OCConstants.USERNAME);
+        String password = configMap.get(OCConstants.PASSWORD);
+        this.ocUrl = configMap.get(OCConstants.REPORT_URL);
+
+        this.interval = Long.parseLong(configMap.get(OCConstants.INTERVAL));
 
 
         if (StringUtils.isBlank(this.ocUrl)) {
@@ -86,10 +86,11 @@ public class RTPublisher implements IPublisher {
 	    logger.info("RTPublisher init done");
     }
 
+	@Override public void init() {
 
+	}
 
-
-    @Override
+	@Override
     public void publish() {
         logger.info("======real-time===========reporting");
 
@@ -105,7 +106,7 @@ public class RTPublisher implements IPublisher {
 	 */
     private void register() {
 
-        String jsonString = MessageHelper.getRTRegistrationRequest();
+        String jsonString = MessageUtil.getRTRegistrationRequest();
 
         String responseBody = sendPostRequest(ocUrl + REGISTRATION_PATH, jsonString, HttpStatus.SC_CREATED);
         if (responseBody != null && responseBody.length() > 0) {
@@ -118,7 +119,7 @@ public class RTPublisher implements IPublisher {
 
             if (ocRegistrationResponse != null) {
                 isRegistered = true;
-                OperationsCenterAgentDataHolder.getInstance().
+                OCAgentDataHolder.getInstance().
                         setServerId(Integer.parseInt(ocRegistrationResponse.getRegistrationResponse().getServerId()));
                 logger.info("Registered in Operations Center successfully.");
             } else {
@@ -132,7 +133,7 @@ public class RTPublisher implements IPublisher {
 	 */
     private void sync() {
 
-        String jsonString = MessageHelper.getRTSynchronizationRequest();
+        String jsonString = MessageUtil.getRTSynchronizationRequest();
 
         String responseBody = sendPostRequest(ocUrl + SYNCHRONIZATION_PATH, jsonString, HttpStatus.SC_OK);
         if (responseBody != null && responseBody.length() > 0) {
@@ -148,7 +149,7 @@ public class RTPublisher implements IPublisher {
                 if ("updated".equals(ocSynchronizationResponse.getSynchronizationResponse().getStatus())) {
                     String command = ocSynchronizationResponse.getSynchronizationResponse().getCommand();
                     logger.info("Executing command. [Command:" + command + "]");
-                    OperationsCenterAgentUtils.performAction(command);
+                    OCAgentUtils.performAction(command);
                 } else if ("error".equals(ocSynchronizationResponse.getSynchronizationResponse().getStatus())) {
                     logger.error("Unable to synchronize properly.");
                     isRegistered = false;
@@ -187,7 +188,7 @@ public class RTPublisher implements IPublisher {
                     logger.error("Request failed with status Code : " + statusCode);
                 }
             }catch (IOException e) {
-                logger.error("Failed to Execute post method", e);
+                logger.error("RTPublisher connection down: ", e);
                 isRegistered = false;
             }
         } catch (UnsupportedEncodingException e) {
@@ -200,9 +201,6 @@ public class RTPublisher implements IPublisher {
 
 
 
-    public long getInitialDelay() {
-        return initialDelay;
-    }
 
     public long getInterval() {
         return interval;

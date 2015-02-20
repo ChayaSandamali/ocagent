@@ -22,13 +22,13 @@ package org.wso2.carbon.oc.internal.messages;
  */
 public class OCPayload {
 
-	private IMessage payload;
+	private Messager payload;
 
 	/**
 	 *
 	 * @return IMessage - any message type with resource data
 	 */
-	public IMessage getPayload() {
+	public Messager getPayload() {
 		return payload;
 	}
 
@@ -36,7 +36,7 @@ public class OCPayload {
 	 *
 	 * @param payload - any Message type with resource content
 	 */
-	public void setPayload(IMessage payload) {
+	public void setPayload(Messager payload) {
 		this.payload = payload;
 	}
 }
