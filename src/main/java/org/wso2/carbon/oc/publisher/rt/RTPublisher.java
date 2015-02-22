@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.wso2.carbon.oc.publisher;
+package org.wso2.carbon.oc.publisher.rt;
 
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpStatus;
@@ -28,12 +28,13 @@ import org.apache.commons.lang.StringUtils;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.wso2.carbon.oc.internal.OCAgentDataExtractor;
 import org.wso2.carbon.oc.internal.OCAgentDataHolder;
 import org.wso2.carbon.oc.internal.OCAgentUtils;
-import org.wso2.carbon.oc.internal.OCConstants;
-import org.wso2.carbon.oc.internal.messages.MessageUtil;
-import org.wso2.carbon.oc.internal.messages.OCRegistrationResponse;
-import org.wso2.carbon.oc.internal.messages.OCSynchronizationResponse;
+import org.wso2.carbon.oc.internal.messages.RegistrationResponse;
+import org.wso2.carbon.oc.internal.messages.SynchronizationResponse;
+import org.wso2.carbon.oc.publisher.OCDataPublisher;
+import org.wso2.carbon.oc.publisher.OCPublisherConstants;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -68,13 +69,13 @@ public class RTPublisher implements OCDataPublisher {
     private static final String CONTENT_TYPE = "application/json";
     private static final String CHARACTER_SET = "UTF-8";
 
-    public RTPublisher(Map<String, String> configMap) {
+	@Override public void init(Map<String, String> configMap) {
 	    // get set config
-        String username = configMap.get(OCConstants.USERNAME);
-        String password = configMap.get(OCConstants.PASSWORD);
-        this.ocUrl = configMap.get(OCConstants.REPORT_URL);
+        String username = configMap.get(OCPublisherConstants.USERNAME);
+        String password = configMap.get(OCPublisherConstants.PASSWORD);
+        this.ocUrl = configMap.get(OCPublisherConstants.REPORT_URL);
 
-        this.interval = Long.parseLong(configMap.get(OCConstants.INTERVAL));
+        this.interval = Long.parseLong(configMap.get(OCPublisherConstants.INTERVAL));
 
 
         if (StringUtils.isBlank(this.ocUrl)) {
@@ -86,41 +87,39 @@ public class RTPublisher implements OCDataPublisher {
 	    logger.info("RTPublisher init done");
     }
 
-	@Override public void init() {
 
-	}
 
 	@Override
-    public void publish() {
+    public void publish(OCAgentDataExtractor dataExtractor) {
         logger.info("======real-time===========reporting");
 
         if (!isRegistered) {
-            register();
+            register(dataExtractor);
         } else {
-            sync();
+            sync(dataExtractor);
         }
     }
 
 	/**
 	 * send the real time registration message
 	 */
-    private void register() {
+    private void register(OCAgentDataExtractor dataExtractor) {
 
-        String jsonString = MessageUtil.getRTRegistrationRequest();
+        String jsonString = RTMessageUtil.getRegistrationRequestMessage(dataExtractor);
 
         String responseBody = sendPostRequest(ocUrl + REGISTRATION_PATH, jsonString, HttpStatus.SC_CREATED);
         if (responseBody != null && responseBody.length() > 0) {
-            OCRegistrationResponse ocRegistrationResponse = null;
+            RegistrationResponse registrationResponse = null;
             try {
-                ocRegistrationResponse = objectMapper.readValue(responseBody, OCRegistrationResponse.class);
+	            registrationResponse = objectMapper.readValue(responseBody, RegistrationResponse.class);
             } catch (IOException e) {
-                logger.error("Failed to read values from OCRegistrationResponse", e);
+                logger.error("Failed to read values from RegistrationResponse", e);
             }
 
-            if (ocRegistrationResponse != null) {
+            if (registrationResponse != null) {
                 isRegistered = true;
                 OCAgentDataHolder.getInstance().
-                        setServerId(Integer.parseInt(ocRegistrationResponse.getRegistrationResponse().getServerId()));
+                        setServerId(Integer.parseInt(registrationResponse.getServerId()));
                 logger.info("Registered in Operations Center successfully.");
             } else {
                 logger.error("Unable receive JSON registration response.");
@@ -131,26 +130,26 @@ public class RTPublisher implements OCDataPublisher {
 	/**
 	 * send the real time synchronization message
 	 */
-    private void sync() {
+    private void sync(OCAgentDataExtractor dataExtractor) {
 
-        String jsonString = MessageUtil.getRTSynchronizationRequest();
+        String jsonString = RTMessageUtil.getSynchronizationRequestMessage(dataExtractor);
 
         String responseBody = sendPostRequest(ocUrl + SYNCHRONIZATION_PATH, jsonString, HttpStatus.SC_OK);
         if (responseBody != null && responseBody.length() > 0) {
-            OCSynchronizationResponse ocSynchronizationResponse = null;
+            SynchronizationResponse synchronizationResponse = null;
             try {
-                ocSynchronizationResponse = objectMapper.readValue(responseBody, OCSynchronizationResponse.class);
+	            synchronizationResponse = objectMapper.readValue(responseBody, SynchronizationResponse.class);
             } catch (IOException e) {
-                logger.error("Failed to read values from OCSynchronizationResponse", e);
+                logger.error("Failed to read values from SynchronizationResponse", e);
                 return;
             }
 
-            if (ocSynchronizationResponse != null) {
-                if ("updated".equals(ocSynchronizationResponse.getSynchronizationResponse().getStatus())) {
-                    String command = ocSynchronizationResponse.getSynchronizationResponse().getCommand();
+            if (synchronizationResponse != null) {
+                if ("updated".equals(synchronizationResponse.getStatus())) {
+                    String command = synchronizationResponse.getCommand();
                     logger.info("Executing command. [Command:" + command + "]");
                     OCAgentUtils.performAction(command);
-                } else if ("error".equals(ocSynchronizationResponse.getSynchronizationResponse().getStatus())) {
+                } else if ("error".equals(synchronizationResponse.getStatus())) {
                     logger.error("Unable to synchronize properly.");
                     isRegistered = false;
                 }

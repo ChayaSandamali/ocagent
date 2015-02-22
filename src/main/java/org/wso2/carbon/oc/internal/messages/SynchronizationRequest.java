@@ -19,9 +19,9 @@ package org.wso2.carbon.oc.internal.messages;
 import org.wso2.carbon.user.api.Tenant;
 
 /**
- * Created by jayanga on 11/10/14.
+ * Holds dynamic data
  */
-public class SynchronizationRequest implements Messager {
+public class SynchronizationRequest implements OCMessage {
 	private double freeMemory;
 	private double idleCpuUsage;
 	private double systemCpuUsage;

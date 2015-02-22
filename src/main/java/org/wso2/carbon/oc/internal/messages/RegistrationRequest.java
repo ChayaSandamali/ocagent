@@ -19,9 +19,9 @@ package org.wso2.carbon.oc.internal.messages;
 import java.util.List;
 
 /**
- * Created by jayanga on 11/10/14.
+ * Holds meta data as registration message
  */
-public class RegistrationRequest implements Messager {
+public class RegistrationRequest implements OCMessage {
 	private String ip;
 	private String serverName;
 	private String serverVersion;

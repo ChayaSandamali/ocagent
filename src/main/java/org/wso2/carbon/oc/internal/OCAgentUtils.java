@@ -18,110 +18,134 @@ package org.wso2.carbon.oc.internal;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.wso2.carbon.base.api.ServerConfigurationService;
+import org.w3c.dom.Document;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.wso2.carbon.oc.publisher.OCPublisherConstants;
 import org.wso2.carbon.server.admin.service.ServerAdmin;
+import org.wso2.carbon.utils.CarbonUtils;
+import org.xml.sax.SAXException;
 
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.xpath.*;
+import java.io.File;
+import java.io.IOException;
 import java.util.*;
 
 /*
-    Provide access to configurations in carbon.xml [Publisher] data
+    Provide access to configurations in oc.xml [Publisher] data
     Allows to invoke commands in server restart, shutdown
 */
 
 public class OCAgentUtils {
 	private static Logger logger = LoggerFactory.getLogger(OCAgentUtils.class);
 
-	//move to const class
-
-
-	// mapping purpose
-	private static final List<String> ALLOWED_PUBLISHER_ATTRIBUTES = Arrays
-			.asList(OCConstants.IS_ENABLE,
-			        OCConstants.CLASS_PATH,
-			        OCConstants.REPORT_URL,
-			        OCConstants.REPORT_HOST_NAME,
-			        OCConstants.REPORT_PORT,
-			        OCConstants.THRIFT_PORT,
-			        OCConstants.THRIFT_SSL_PORT,
-			        OCConstants.USERNAME,
-			        OCConstants.PASSWORD,
-			        OCConstants.DELAY,
-			        OCConstants.INTERVAL);
-
-
-	private static final List<String> ALLOWED_CLASSES = Arrays
-			.asList("org.wso2.carbon.oc.publisher.RTPublisher",
-			        "org.wso2.carbon.oc.publisher.MBPublisher",
-			        "org.wso2.carbon.oc.publisher.BAMPublisher");
-
-	private static final List<String> ALLOWED_PUBLISHERS = Arrays
-			.asList("RTPublisher",
-			        "MBPublisher",
-			        "BAMPublisher");
-
-	//var name
-	private static Map<String, Map<String, String>> ocConfigurations;
-
-
-	public static ServerConfigurationService getServerConfigurationService() {
-		ServerConfigurationService serverConfigurationService =
-				OCAgentDataHolder.getInstance().getServerConfigurationService();
-		if (serverConfigurationService == null) {
-			throw new RuntimeException("ServerConfigurationService is unavailable");
-		}
-		return serverConfigurationService;
-	}
+	private static Document ocXmlDocument;
 
 	/**
-	 * @return Map<String, Map<String, String>> - [classpath, [attr, value]] map of config data
+	 * This method extract active publisher's class path
+	 * @return List<String> - class package path list
 	 */
-	private static Map<String, Map<String, String>> getConfigurations() {
-		ServerConfigurationService serverConfigurationService =
-				OCAgentUtils.getServerConfigurationService();
-
-		if (ocConfigurations == null) {
-			ocConfigurations = new HashMap<String, Map<String, String>>();
-			for (String publisher : ALLOWED_PUBLISHERS) {
-				String publisherPath = "Publishers." + publisher;
-
-				Map<String, String> configMap = new HashMap<String, String>();
-				for (String attr : ALLOWED_PUBLISHER_ATTRIBUTES) {
-					String value =
-							serverConfigurationService.getFirstProperty(publisherPath + "." + attr);
-					if (value != null)
-						configMap.put(attr, value);
-				}
-
-				ocConfigurations.put(configMap.get(OCConstants.CLASS_PATH), configMap);
+	public static List<String> getActiveOcPublishersList() {
+		List<String> classList = new ArrayList<String>();
+		Document doc = OCAgentUtils.getOcXmlDocument();
+		List<Map<String, String>> publisherList = getNodeMapList(
+				eval(doc, OCPublisherConstants.OC_PUBLISHER_ROOT_XPATH));
+		for (Map<String, String> publisher : publisherList) {
+			if(publisher.get(OCPublisherConstants.IS_ENABLE).equalsIgnoreCase("true")) {
+				classList.add(publisher.get(OCPublisherConstants.CLASS_PATH));
 			}
 		}
-
-		return ocConfigurations;
+		return classList;
 	}
 
 	/**
-	 * @return List<String> - list of class paths
+	 *
+	 * @param classPath - package class path
+	 * @return Map<String, String> - key, val pair of publisher info
 	 */
-	public static List<String> getActivePublishers() {
-		List<String> activePublishers = new ArrayList<String>();
-
-		for (int i = 0; i < ALLOWED_CLASSES.size(); i++) {
-			Map<String, String> configMap =
-					OCAgentUtils.getConfigurations().get(ALLOWED_CLASSES.get(i));
-			if (Boolean.parseBoolean(configMap.get(OCConstants.IS_ENABLE))) {
-				activePublishers.add(ALLOWED_CLASSES.get(i));
+	public static Map<String, String> getOcPublisherConfigMap(String classPath) {
+		Map<String, String> resultMap = null;
+		Document doc = OCAgentUtils.getOcXmlDocument();
+		List<Map<String, String>> publisherList = getNodeMapList(
+				eval(doc, OCPublisherConstants.OC_PUBLISHER_ROOT_XPATH));
+		for (Map<String, String> publisher : publisherList) {
+			if(publisher.get(OCPublisherConstants.CLASS_PATH).equalsIgnoreCase(classPath)) {
+				resultMap = publisher;
+				break;
 			}
 		}
-		return activePublishers;
+		return resultMap;
 	}
 
 	/**
-	 * @param classPath "org.wso2.carbon.oc.internal.RTPublisher"
-	 * @return particular xml map
+	 *
+	 * @return Document - oc.xml document
 	 */
-	public static Map<String, String> getPublisher(String classPath) {
-		return OCAgentUtils.getConfigurations().get(classPath);
+	private static Document getOcXmlDocument() {
+		if(ocXmlDocument == null) {
+			try {
+				File file = new File(CarbonUtils.getCarbonHome() + "/repository/conf/" + OCAgentConstants.OC_XML);
+
+				DocumentBuilder dBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+
+				ocXmlDocument = dBuilder.parse(file);
+
+			} catch (SAXException e) {
+				logger.info(e.getMessage(), e);
+			} catch (IOException e) {
+				logger.info(e.getMessage(), e);
+			} catch (ParserConfigurationException e) {
+				logger.info(e.getMessage(), e);
+			}
+		}
+		return ocXmlDocument;
 	}
+
+	/**
+	 *
+	 * @param doc - oc.xml document
+	 * @param pathStr - xpath
+	 * @return NodeList - xml attr, value
+	 */
+	private static NodeList eval(final Document doc, final String pathStr){
+		NodeList resultList = null;
+		try {
+			final XPath xpath = XPathFactory.newInstance().newXPath();
+			final XPathExpression expr = xpath.compile(pathStr);
+			resultList =  (NodeList) expr.evaluate(doc, XPathConstants.NODESET);
+		}
+		catch (XPathExpressionException e) {
+			logger.info(e.getMessage(), e);
+		}
+		return resultList;
+	}
+
+	/**
+	 *
+	 * @param nodes - xml attr, values
+	 * @return List<Map<String, String>> - oc.xml attr, value as list of map
+	 */
+	private static List<Map<String, String>> getNodeMapList(final NodeList nodes) {
+		final List<Map<String, String>> out = new ArrayList<Map<String, String>>();
+		int len = (nodes != null) ? nodes.getLength() : 0;
+		for (int i = 0; i < len; i++) {
+			NodeList children = nodes.item(i).getChildNodes();
+			Map<String, String> childMap = new HashMap<String, String>();
+			for (int j = 0; j < children.getLength(); j++) {
+				Node child = children.item(j);
+				if (child.getNodeType() == Node.ELEMENT_NODE)
+					childMap.put(child.getNodeName(), child.getTextContent());
+			}
+			out.add(childMap);
+		}
+		return out;
+	}
+
+
+
 
 	/**
 	 * @param command "RESTART", "SHUTDOWN" etc..

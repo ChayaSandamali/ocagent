@@ -1,11 +1,14 @@
-package org.wso2.carbon.oc.internal;
+package org.wso2.carbon.oc.publisher;
 
 /**
- * Created by noelyahan on 2/19/15.
+ * Holds constants related to oc publisher
  */
-public class OCConstants {
+public class OCPublisherConstants {
 
-	//access from outside as the key
+	//xpath for publisher data
+	public static String OC_PUBLISHER_ROOT_XPATH = "//Publishers//Publisher";
+
+	//access from outside as the key for config map
 	public static final String IS_ENABLE = "Enable";
 	public static final String CLASS_PATH = "Class";
 	public static final String REPORT_URL = "ReportURL";
@@ -15,8 +18,7 @@ public class OCConstants {
 	public static final String THRIFT_SSL_PORT = "ThriftSSLPort";
 	public static final String USERNAME = "Username";
 	public static final String PASSWORD = "Password";
-	public static final String DELAY = "Reporting.InitialDelay";
-	public static final String INTERVAL = "Reporting.Interval";
+	public static final String INTERVAL = "Interval";
 
-	private OCConstants() {}
+	private OCPublisherConstants() {}
 }

@@ -14,15 +14,16 @@
  * limitations under the License.
  */
 
-package org.wso2.carbon.oc.publisher;
+package org.wso2.carbon.oc.publisher.bam;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wso2.carbon.databridge.agent.thrift.DataPublisher;
 import org.wso2.carbon.databridge.agent.thrift.exception.AgentException;
 import org.wso2.carbon.databridge.commons.exception.*;
-import org.wso2.carbon.oc.internal.OCConstants;
-import org.wso2.carbon.oc.internal.messages.MessageUtil;
+import org.wso2.carbon.oc.internal.OCAgentDataExtractor;
+import org.wso2.carbon.oc.publisher.OCDataPublisher;
+import org.wso2.carbon.oc.publisher.OCPublisherConstants;
 import org.wso2.carbon.utils.CarbonUtils;
 
 import java.net.MalformedURLException;
@@ -50,13 +51,13 @@ public class BAMPublisher implements OCDataPublisher {
 
 
 
-    public BAMPublisher(Map<String, String> configMap) {
+	@Override public void init(Map<String, String> configMap) {
         //load xml config
-        this.username = configMap.get(OCConstants.USERNAME);
-        this.password = configMap.get(OCConstants.PASSWORD);
-        this.defaultHostName = configMap.get(OCConstants.REPORT_HOST_NAME);
-        this.thriftPort = configMap.get(OCConstants.THRIFT_PORT);
-        this.interval = Long.parseLong(configMap.get(OCConstants.INTERVAL));
+        this.username = configMap.get(OCPublisherConstants.USERNAME);
+        this.password = configMap.get(OCPublisherConstants.PASSWORD);
+        this.defaultHostName = configMap.get(OCPublisherConstants.REPORT_HOST_NAME);
+        this.thriftPort = configMap.get(OCPublisherConstants.THRIFT_PORT);
+        this.interval = Long.parseLong(configMap.get(OCPublisherConstants.INTERVAL));
 
         try {
             synchronized (BAMPublisher.class) {
@@ -107,7 +108,7 @@ public class BAMPublisher implements OCDataPublisher {
 	 *
 	 * @return String - register message stream definition json
 	 */
-    private String getRegisterStreamDef() {
+    private String getRegisterStreamDef(OCAgentDataExtractor dataExtractor) {
 	    return "{" +
 	           "  'name':'"+REGISTER_STREAM+"'," +
 	           "  'description': 'Storing OC server register request'," +
@@ -116,7 +117,7 @@ public class BAMPublisher implements OCDataPublisher {
 	           "               " +
 	           "  ]," +
 	           "  'payloadData':[" +
-	           MessageUtil.getBAMRegisterPayloadDef() +
+	           BAMMessageUtil.getBAMRegisterPayloadDef(dataExtractor) +
 	           "  ]" +
 	           "}";
     }
@@ -125,7 +126,7 @@ public class BAMPublisher implements OCDataPublisher {
 	 *
 	 * @return String - synchronize message stream definition json
 	 */
-    private String getSynchronizeStreamDef() {
+    private String getSynchronizeStreamDef(OCAgentDataExtractor dataExtractor) {
         return "{" +
                 "  'name':'"+SYNC_STREAM+"'," +
                 "  'description': 'Storing OC server update request'," +
@@ -134,7 +135,7 @@ public class BAMPublisher implements OCDataPublisher {
                 "               " +
                 "  ]," +
                 "  'payloadData':[" +
-                    MessageUtil.getBAMSyncPayloadDef() +
+                    BAMMessageUtil.getBAMSyncPayloadDef(dataExtractor) +
                 "  ]" +
                 "}";
     }
@@ -145,23 +146,21 @@ public class BAMPublisher implements OCDataPublisher {
         System.setProperty("javax.net.ssl.trustStorePassword", "wso2carbon");
     }
 
-	@Override public void init() {
 
-	}
 
 	@Override
-    public void publish() {
+    public void publish(OCAgentDataExtractor dataExtractor) {
 
         logger.info("==========wso2-bam==========reporting");
 	    try {
 
 	        if(!isRegistered) {
-		        dataPublisher.publish(getStreamId(getRegisterStreamDef()), null, null, MessageUtil
-				        .getBAMRegistrationRequest());
+		        dataPublisher.publish(getStreamId(getRegisterStreamDef(dataExtractor)), null, null, BAMMessageUtil
+				        .getBAMRegistrationRequest(dataExtractor));
 		        isRegistered = true;
 	        }else{
-		        dataPublisher.publish(getStreamId(getSynchronizeStreamDef()), null, null, MessageUtil
-				        .getBAMSynchronizationRequest());
+		        dataPublisher.publish(getStreamId(getSynchronizeStreamDef(dataExtractor)), null, null, BAMMessageUtil
+				        .getBAMSynchronizationRequest(dataExtractor));
 	        }
 
 

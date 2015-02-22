@@ -63,14 +63,6 @@ public class OCAgentDataHolder {
 		return serverConfigurationService;
 	}
 
-	public StatisticsAdmin getStatisticsAdmin() {
-		return statisticsAdmin;
-	}
-
-	public void setStatisticsAdmin(StatisticsAdmin statisticsAdmin) {
-		this.statisticsAdmin = statisticsAdmin;
-	}
-
 	public IServerAdmin getServerAdmin() {
 		return serverAdmin;
 	}

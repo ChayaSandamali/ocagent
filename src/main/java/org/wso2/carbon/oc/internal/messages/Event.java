@@ -16,15 +16,27 @@
 
 package org.wso2.carbon.oc.internal.messages;
 
-public class OCRegistrationRequest {
-	private RegistrationRequest registrationRequest;
+/**
+ * This is used build the json message in event, payload wise
+ * using jackson
+ */
+public class Event {
 
-	public OCRegistrationRequest() {
-		this.registrationRequest = new RegistrationRequest();
-		this.registrationRequest.setTimestamp(System.currentTimeMillis());
+	private Payload event;
+
+	public Event() {
+		this.event = new Payload();
 	}
 
-	public RegistrationRequest getRegistrationRequest() {
-		return registrationRequest;
+	/**
+	 * Helps to get final event data with payload in it
+	 * @return OCPayload - resource content
+	 */
+	public Payload getEvent() {
+		return event;
+	}
+
+	public void setPayload(OCMessage payload) {
+		this.event.setPayload(payload);
 	}
 }

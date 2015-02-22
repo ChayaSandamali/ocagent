@@ -17,7 +17,7 @@
 package org.wso2.carbon.oc.internal.messages;
 
 /**
- * Created by jayanga on 11/10/14.
+ * Holds registration response
  */
 public class RegistrationResponse {
 	private String serverId;

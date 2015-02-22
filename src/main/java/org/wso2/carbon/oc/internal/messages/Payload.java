@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 The Apache Software Foundation.
+ * Copyright 2004,2005 The Apache Software Foundation.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,19 +17,26 @@
 package org.wso2.carbon.oc.internal.messages;
 
 /**
- * Created by jayanga on 11/10/14.
+ * This helps to build the payload json with resource information
+ * jackson
  */
+public class Payload {
 
-//remove the wrapper
-public class OCSynchronizationRequest {
-	private SynchronizationRequest synchronizationRequest;
+	private OCMessage payload;
 
-	public OCSynchronizationRequest() {
-		this.synchronizationRequest = new SynchronizationRequest();
-		this.synchronizationRequest.setTimestamp(System.currentTimeMillis());
+	/**
+	 *
+	 * @return IMessage - any message type with resource data
+	 */
+	public OCMessage getPayload() {
+		return payload;
 	}
 
-	public SynchronizationRequest getSynchronizationRequest() {
-		return synchronizationRequest;
+	/**
+	 *
+	 * @param payload - any Message type with resource content
+	 */
+	public void setPayload(OCMessage payload) {
+		this.payload = payload;
 	}
 }

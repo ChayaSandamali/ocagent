@@ -26,6 +26,7 @@ import org.wso2.carbon.user.core.service.RealmService;
 import org.wso2.carbon.utils.ConfigurationContextService;
 
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Executors;
@@ -67,18 +68,17 @@ public class OCAgentComponent {
 
 			// get active publishers class paths
 			//change publisherList
-			List<String> publisherList = OCAgentUtils.getActivePublishers();
+			List<String> publisherList = OCAgentUtils.getActiveOcPublishersList();
 
 				for (String activePublisher : publisherList) {
 					OCDataPublisher publisher = null;
-					Class publisherClass = Class.forName(activePublisher);
 
-					Object[] publisherArguments = new Object[] {OCAgentUtils.getPublisher(activePublisher)};
+					Class publisherClass = Class.forName(activePublisher);//
 
-					Constructor publisherConstructor = publisherClass.getConstructor(Map.class);
+					publisher = (OCDataPublisher) publisherClass.newInstance();
 
-					publisher = (OCDataPublisher) publisherConstructor.newInstance(publisherArguments);
-					//init and parse config
+					publisher.init(OCAgentUtils.getOcPublisherConfigMap(activePublisher));
+
 
 					//Start reporting task as scheduled task
 					if (publisher != null) {

@@ -26,15 +26,15 @@ import org.wso2.carbon.oc.publisher.OCDataPublisher;
 
 public class OCAgentReporterTask implements Runnable {
 	private static Logger logger = LoggerFactory.getLogger(OCAgentReporterTask.class);
-	//change
-	private OCDataPublisher operationsCenterConnector;
+
+	private OCDataPublisher ocDataPublisher;
 
 	public OCAgentReporterTask(OCDataPublisher operationsCenterConnector) {
-		this.operationsCenterConnector = operationsCenterConnector;
+		this.ocDataPublisher = operationsCenterConnector;
 	}
 
 	@Override
 	public void run() {
-		operationsCenterConnector.publish();
+		ocDataPublisher.publish(OCAgentDataExtractor.getInstance());
 	}
 }

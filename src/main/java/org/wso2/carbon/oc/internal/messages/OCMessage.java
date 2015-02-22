@@ -19,5 +19,5 @@ package org.wso2.carbon.oc.internal.messages;
 /**
  * Message interface, dynamically handles the message building
  */
-public interface Messager {
+public interface OCMessage {
 }

@@ -18,6 +18,10 @@ package org.wso2.carbon.oc.internal;
 
 import com.jezhumble.javasysmon.JavaSysMon;
 import org.apache.axiom.om.OMElement;
+import org.wso2.carbon.oc.internal.messages.RegistrationRequest;
+import org.wso2.carbon.oc.internal.messages.RegistrationResponse;
+import org.wso2.carbon.oc.internal.messages.SynchronizationRequest;
+import org.wso2.carbon.oc.internal.messages.SynchronizationResponse;
 import org.wso2.carbon.user.api.Tenant;
 import org.apache.axis2.clustering.ClusteringAgent;
 import org.apache.axis2.description.Parameter;
@@ -47,6 +51,11 @@ public class OCAgentDataExtractor {
 	private static OCAgentDataExtractor instance =
 			new OCAgentDataExtractor();
 	private static Logger logger = LoggerFactory.getLogger(OCAgentDataExtractor.class);
+
+	private static SynchronizationRequest synchronizationRequest;
+	private static RegistrationRequest registrationRequest;
+	private static SynchronizationResponse synchronizationResponse;
+	private static RegistrationResponse registrationResponse;
 
 	private static final double PERCENT = 100;
 	private static final double MEGA = 1000000;
@@ -292,5 +301,75 @@ public class OCAgentDataExtractor {
 			Collections.sort(patches);
 		}
 		return patches;
+	}
+
+	public RegistrationResponse getRegistrationResponse() {
+		if(registrationResponse == null) {
+			registrationResponse = new RegistrationResponse();
+			logger.info("new RegistrationResponse obj");
+		}
+		return registrationResponse;
+	}
+
+	public SynchronizationResponse getSynchronizationResponse() {
+		if(synchronizationResponse == null) {
+			synchronizationResponse = new SynchronizationResponse();
+			logger.info("new SynchronizationResponse obj");
+		}
+		return synchronizationResponse;
+	}
+
+	public RegistrationRequest getRegistrationRequest() {
+		if(registrationRequest == null) {
+			registrationRequest = new RegistrationRequest();
+			logger.info("new RegistrationRequest obj");
+		}
+
+		try {
+			registrationRequest.setIp(this.getLocalIp());
+			registrationRequest.setServerName(this.getServerName());
+			registrationRequest.setServerVersion(this.getServerVersion());
+			registrationRequest.setDomain(this.getDomain());
+			registrationRequest.setSubDomain(this.getSubDomain());
+			registrationRequest.setAdminServiceUrl(this.getAdminServiceUrl());
+			registrationRequest.setStartTime(this.getServerStartTime());
+			registrationRequest.setOs(this.getOs());
+			registrationRequest.setTotalMemory(this.getTotalMemory());
+			registrationRequest.setCpuCount(this.getCpuCount());
+			registrationRequest.setCpuSpeed(this.getCpuSpeed());
+
+			List<String> patches = this.getPatches();
+			if (patches.size() > 0) {
+				registrationRequest.setPatches(patches);
+			}
+
+		} catch (ParameterUnavailableException e) {
+			logger.error("Failed to read registration parameter. ", e);
+		}
+		return registrationRequest;
+	}
+
+	public SynchronizationRequest getSynchronizationRequest() {
+		if(synchronizationRequest == null) {
+			synchronizationRequest = new SynchronizationRequest();
+			logger.info("new SynchronizationRequest obj");
+		}
+
+		try {
+			synchronizationRequest.setAdminServiceUrl(this.getAdminServiceUrl());
+			synchronizationRequest.setServerUpTime(this.getServerUpTime());
+			synchronizationRequest.setThreadCount(this.getThreadCount());
+			synchronizationRequest.setFreeMemory(this.getFreeMemory());
+			synchronizationRequest.setIdleCpuUsage(this.getIdelCpuUsage());
+			synchronizationRequest.setSystemCpuUsage(this.getSystemCpuUsage());
+			synchronizationRequest.setUserCpuUsage(this.getUserCpuUsage());
+			synchronizationRequest.setSystemLoadAverage(this.getSystemLoadAverage());
+			synchronizationRequest.setTenants(this.getAllTenants());
+
+		} catch (ParameterUnavailableException e) {
+			logger.error("Failed to read synchronization parameter. ", e);
+		}
+
+		return synchronizationRequest;
 	}
 }
