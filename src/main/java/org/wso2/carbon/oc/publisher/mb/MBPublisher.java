@@ -18,7 +18,6 @@ package org.wso2.carbon.oc.publisher.mb;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.wso2.carbon.oc.internal.OCAgentDataExtractor;
 import org.wso2.carbon.oc.publisher.OCDataPublisher;
 import org.wso2.carbon.oc.publisher.OCPublisherConstants;
 
@@ -106,13 +105,13 @@ public class MBPublisher implements OCDataPublisher {
 	}
 
 	@Override
-	public void publish(OCAgentDataExtractor dataExtractor) {
+	public void publish(Map<String, Object> dataMap) {
 		logger.info("======wso2-mb===========reporting");
 		if (!isRegistered) {
-			sendMessages(REG_QUEUE, MBMessageUtil.getRegistrationPayload(dataExtractor));
+			sendMessages(REG_QUEUE, MBMessageUtil.getRegistrationPayload(dataMap));
 			isRegistered = true;
 		} else {
-			sendMessages(SYNC_QUEUE, MBMessageUtil.getSynchronizationPayload(dataExtractor));
+			sendMessages(SYNC_QUEUE, MBMessageUtil.getSynchronizationPayload(dataMap));
 		}
 
 	}

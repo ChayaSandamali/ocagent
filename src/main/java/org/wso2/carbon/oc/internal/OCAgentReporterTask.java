@@ -35,6 +35,6 @@ public class OCAgentReporterTask implements Runnable {
 
 	@Override
 	public void run() {
-		ocDataPublisher.publish(OCAgentDataExtractor.getInstance());
+		ocDataPublisher.publish(OCAgentDataExtractor.getInstance().getAllOcData());
 	}
 }

@@ -44,35 +44,37 @@ public class OCAgentUtils {
 
 	private static Document ocXmlDocument;
 
+	private OCAgentUtils() {}
+
 	/**
 	 * This method extract active publisher's class path
 	 * @return List<String> - class package path list
 	 */
-	public static List<String> getActiveOcPublishersList() {
-		List<String> classList = new ArrayList<String>();
+	public static List<Map<String, String>> getActiveOcPublishersList() {
+		List<Map<String, String>> activePublisherList = new ArrayList<Map<String, String>>();
 		Document doc = OCAgentUtils.getOcXmlDocument();
 		List<Map<String, String>> publisherList = getNodeMapList(
-				eval(doc, OCPublisherConstants.OC_PUBLISHER_ROOT_XPATH));
+				eval(doc, OCAgentConstants.OC_PUBLISHER_ROOT_XPATH));
 		for (Map<String, String> publisher : publisherList) {
-			if(publisher.get(OCPublisherConstants.IS_ENABLE).equalsIgnoreCase("true")) {
-				classList.add(publisher.get(OCPublisherConstants.CLASS_PATH));
+			if(Boolean.valueOf(publisher.get(OCAgentConstants.ENABLE).toString())) {
+				activePublisherList.add(publisher);
 			}
 		}
-		return classList;
+		return activePublisherList;
 	}
 
 	/**
 	 *
-	 * @param classPath - package class path
+	 * @param publisherName - publisher name from oc xml config
 	 * @return Map<String, String> - key, val pair of publisher info
 	 */
-	public static Map<String, String> getOcPublisherConfigMap(String classPath) {
+	public static Map<String, String> getOcPublisherConfigMap(String publisherName) {
 		Map<String, String> resultMap = null;
 		Document doc = OCAgentUtils.getOcXmlDocument();
 		List<Map<String, String>> publisherList = getNodeMapList(
-				eval(doc, OCPublisherConstants.OC_PUBLISHER_ROOT_XPATH));
+				eval(doc, OCAgentConstants.OC_PUBLISHER_ROOT_XPATH));
 		for (Map<String, String> publisher : publisherList) {
-			if(publisher.get(OCPublisherConstants.CLASS_PATH).equalsIgnoreCase(classPath)) {
+			if(publisher.get(OCAgentConstants.NAME).equalsIgnoreCase(publisherName)) {
 				resultMap = publisher;
 				break;
 			}

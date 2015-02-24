@@ -33,7 +33,6 @@ public class OCAgentDataHolder {
 	private ServerConfigurationService serverConfigurationService;
 	private IServerAdmin serverAdmin;           // server information, commands
 	private RealmService realmService;          // tenant information
-	private StatisticsAdmin statisticsAdmin;    // request, response count
 	private int serverId;
 
 	private OCAgentDataHolder() {

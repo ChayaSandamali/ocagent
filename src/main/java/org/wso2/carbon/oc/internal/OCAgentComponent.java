@@ -67,17 +67,16 @@ public class OCAgentComponent {
 			logger.info("Activating Operations Center Agent component.");
 
 			// get active publishers class paths
-			//change publisherList
-			List<String> publisherList = OCAgentUtils.getActiveOcPublishersList();
+			List<Map<String, String>> publisherList = OCAgentUtils.getActiveOcPublishersList();
 
-				for (String activePublisher : publisherList) {
+				for (Map<String, String> activePublisher : publisherList) {
 					OCDataPublisher publisher = null;
 
-					Class publisherClass = Class.forName(activePublisher);//
+					Class publisherClass = Class.forName(activePublisher.get(OCAgentConstants.CLASS));
 
 					publisher = (OCDataPublisher) publisherClass.newInstance();
 
-					publisher.init(OCAgentUtils.getOcPublisherConfigMap(activePublisher));
+					publisher.init(OCAgentUtils.getOcPublisherConfigMap(activePublisher.get(OCAgentConstants.NAME)));
 
 
 					//Start reporting task as scheduled task

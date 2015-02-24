@@ -21,7 +21,6 @@ import org.slf4j.LoggerFactory;
 import org.wso2.carbon.databridge.agent.thrift.DataPublisher;
 import org.wso2.carbon.databridge.agent.thrift.exception.AgentException;
 import org.wso2.carbon.databridge.commons.exception.*;
-import org.wso2.carbon.oc.internal.OCAgentDataExtractor;
 import org.wso2.carbon.oc.publisher.OCDataPublisher;
 import org.wso2.carbon.oc.publisher.OCPublisherConstants;
 import org.wso2.carbon.utils.CarbonUtils;
@@ -33,153 +32,110 @@ import java.util.Map;
  * Allows publish data to bam as payload data stream
  */
 public class BAMPublisher implements OCDataPublisher {
-    static Logger logger =  LoggerFactory.getLogger(BAMPublisher.class);
 
+	static Logger logger = LoggerFactory.getLogger(BAMPublisher.class);
+	private static DataPublisher dataPublisher = null;
 	//config attributes
-    private String username;
-    private String password;
-    private String defaultHostName;
-    private String thriftPort;
-    private long interval;
+	private String username;
+	private String password;
+	private String defaultHostName;
+	private String thriftPort;
+	private long interval;
 	private boolean isRegistered = false;
 
-    //stream names
-    private static final String REGISTER_STREAM = "RegisterStream";
-    private static final String SYNC_STREAM = "SyncStream";
-
-	private static DataPublisher dataPublisher = null;
-
-
-
 	@Override public void init(Map<String, String> configMap) {
-        //load xml config
-        this.username = configMap.get(OCPublisherConstants.USERNAME);
-        this.password = configMap.get(OCPublisherConstants.PASSWORD);
-        this.defaultHostName = configMap.get(OCPublisherConstants.REPORT_HOST_NAME);
-        this.thriftPort = configMap.get(OCPublisherConstants.THRIFT_PORT);
-        this.interval = Long.parseLong(configMap.get(OCPublisherConstants.INTERVAL));
+		//load xml config
+		this.username = configMap.get(OCPublisherConstants.USERNAME);
+		this.password = configMap.get(OCPublisherConstants.PASSWORD);
+		this.defaultHostName = configMap.get(OCPublisherConstants.REPORT_HOST_NAME);
+		this.thriftPort = configMap.get(OCPublisherConstants.THRIFT_PORT);
+		this.interval = Long.parseLong(configMap.get(OCPublisherConstants.INTERVAL));
 
-        try {
-            synchronized (BAMPublisher.class) {
-                if(dataPublisher == null){
-                    setTrustStoreParams();
-                    dataPublisher = new DataPublisher("tcp://"+defaultHostName+":"+thriftPort, username, password);
-                }
+		try {
+			synchronized (BAMPublisher.class) {
+				if (dataPublisher == null) {
+					setTrustStoreParams();
+					dataPublisher = new DataPublisher("tcp://" + defaultHostName + ":" + thriftPort,
+					                                  username, password);
+				}
 
-            }
+			}
 
-        } catch (MalformedURLException e) {
-           logger.info(e.getMessage(), e);
-        } catch (AgentException e) {
-	        logger.info("BAMPublisher connection down", e);
-        } catch (AuthenticationException e) {
-	        logger.info(e.getMessage(), e);
-        } catch (TransportException e) {
-	        logger.info(e.getMessage(), e);
-        }
-        logger.info("BAMPublisher init done");
-    }
-
-
+		} catch (MalformedURLException e) {
+			logger.info(e.getMessage(), e);
+		} catch (AgentException e) {
+			logger.info("BAMPublisher connection down", e);
+		} catch (AuthenticationException e) {
+			logger.info(e.getMessage(), e);
+		} catch (TransportException e) {
+			logger.info(e.getMessage(), e);
+		}
+		logger.info("BAMPublisher init done");
+	}
 
 	/**
-	 *
 	 * @param streamDef - stream definition json string event > payload
 	 * @return String - unique generated stream id
 	 */
-    private String getStreamId(String streamDef) throws AgentException{
-        String streamId = null;
+	private String getStreamId(String streamDef) throws AgentException {
+		String streamId = null;
 
-            try {
-                streamId = dataPublisher.defineStream(streamDef);
-            }  catch (MalformedStreamDefinitionException e) {
-	            logger.info(e.getMessage(), e);
-            } catch (StreamDefinitionException e) {
-	            logger.info(e.getMessage(), e);
-            } catch (DifferentStreamDefinitionAlreadyDefinedException e) {
-	            logger.info(e.getMessage(), e);
-            }
+		try {
+			streamId = dataPublisher.defineStream(streamDef);
+		} catch (MalformedStreamDefinitionException e) {
+			logger.info(e.getMessage(), e);
+		} catch (StreamDefinitionException e) {
+			logger.info(e.getMessage(), e);
+		} catch (DifferentStreamDefinitionAlreadyDefinedException e) {
+			logger.info(e.getMessage(), e);
+		}
 
-
-        return streamId;
-    }
-
-	/**
-	 *
-	 * @return String - register message stream definition json
-	 */
-    private String getRegisterStreamDef(OCAgentDataExtractor dataExtractor) {
-	    return "{" +
-	           "  'name':'"+REGISTER_STREAM+"'," +
-	           "  'description': 'Storing OC server register request'," +
-	           "  'tags':['update', 'request', 'up_request']," +
-	           "  'metaData':[" +
-	           "               " +
-	           "  ]," +
-	           "  'payloadData':[" +
-	           BAMMessageUtil.getBAMRegisterPayloadDef(dataExtractor) +
-	           "  ]" +
-	           "}";
-    }
-
-	/**
-	 *
-	 * @return String - synchronize message stream definition json
-	 */
-    private String getSynchronizeStreamDef(OCAgentDataExtractor dataExtractor) {
-        return "{" +
-                "  'name':'"+SYNC_STREAM+"'," +
-                "  'description': 'Storing OC server update request'," +
-                "  'tags':['update', 'request', 'up_request']," +
-                "  'metaData':[" +
-                "               " +
-                "  ]," +
-                "  'payloadData':[" +
-                    BAMMessageUtil.getBAMSyncPayloadDef(dataExtractor) +
-                "  ]" +
-                "}";
-    }
-
-
-    private void setTrustStoreParams() {
-        System.setProperty("javax.net.ssl.trustStore", CarbonUtils.getCarbonHome() + "/repository/resources/security" + "/client-truststore.jks");
-        System.setProperty("javax.net.ssl.trustStorePassword", "wso2carbon");
-    }
-
-
-
-	@Override
-    public void publish(OCAgentDataExtractor dataExtractor) {
-
-        logger.info("==========wso2-bam==========reporting");
-	    try {
-
-	        if(!isRegistered) {
-		        dataPublisher.publish(getStreamId(getRegisterStreamDef(dataExtractor)), null, null, BAMMessageUtil
-				        .getBAMRegistrationRequest(dataExtractor));
-		        isRegistered = true;
-	        }else{
-		        dataPublisher.publish(getStreamId(getSynchronizeStreamDef(dataExtractor)), null, null, BAMMessageUtil
-				        .getBAMSynchronizationRequest(dataExtractor));
-	        }
-
-
-        } catch (AgentException e) {
-	        logger.info("BAMPublisher connection down", e);
-        }
-    }
-
-	/**
-	 *  stop bam publisher
-	 */
-	public void stop(){
-		dataPublisher.stop();
+		return streamId;
 	}
 
 
 
-    @Override
-    public long getInterval() {
-        return interval;
-    }
+	private void setTrustStoreParams() {
+		System.setProperty("javax.net.ssl.trustStore",
+		                   CarbonUtils.getCarbonHome() + "/repository/resources/security" +
+		                   "/client-truststore.jks");
+		System.setProperty("javax.net.ssl.trustStorePassword", "wso2carbon");
+	}
+
+	@Override
+	public void publish(Map<String, Object> dataMap) {
+
+		logger.info("==========wso2-bam==========reporting");
+		try {
+
+			if (!isRegistered) {
+				dataPublisher.publish(getStreamId(BAMMessageUtil.getRegisterStreamDef(dataMap)), null, null,
+				                      BAMMessageUtil
+						                      .getBAMRegistrationRequestMessage(dataMap));
+				isRegistered = true;
+			} else {
+				dataPublisher.publish(getStreamId(BAMMessageUtil.getSynchronizeStreamDef(dataMap)), null, null,
+				                      BAMMessageUtil
+						                      .getBAMSynchronizationRequestMessage(dataMap));
+			}
+
+		} catch (AgentException e) {
+			logger.info("BAMPublisher connection down", e);
+		}
+
+		//		logger.info(getSynchronizeStreamDef(dataExtractor));
+		//		logger.info(getRegisterStreamDef(dataExtractor));
+	}
+
+	/**
+	 * stop bam publisher
+	 */
+	public void stop() {
+		dataPublisher.stop();
+	}
+
+	@Override
+	public long getInterval() {
+		return interval;
+	}
 }

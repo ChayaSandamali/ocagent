@@ -16,8 +16,6 @@
 
 package org.wso2.carbon.oc.publisher;
 
-import org.wso2.carbon.oc.internal.OCAgentDataExtractor;
-
 import java.util.Map;
 
 /**
@@ -26,19 +24,17 @@ import java.util.Map;
 public interface OCDataPublisher {
 
 	/**
-	 *
-	 * @param configMap - c.xml data keys can find on - OCPyblisherConstants
+	 * @param configMap - c.xml data keys can find on - OCPublisherConstants
 	 */
 	void init(Map<String, String> configMap);
 
 	/**
 	 * publish data to endpoint/resource
 	 */
-    void publish(OCAgentDataExtractor dataExtractor);
+	void publish(Map<String, Object> dataMap);
 
 	/**
-	 *
 	 * @return interval time mili-seconds - periodical data publishing time
 	 */
-    long getInterval();
+	long getInterval();
 }

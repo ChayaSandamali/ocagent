@@ -18,10 +18,6 @@ package org.wso2.carbon.oc.internal;
 
 import com.jezhumble.javasysmon.JavaSysMon;
 import org.apache.axiom.om.OMElement;
-import org.wso2.carbon.oc.internal.messages.RegistrationRequest;
-import org.wso2.carbon.oc.internal.messages.RegistrationResponse;
-import org.wso2.carbon.oc.internal.messages.SynchronizationRequest;
-import org.wso2.carbon.oc.internal.messages.SynchronizationResponse;
 import org.wso2.carbon.user.api.Tenant;
 import org.apache.axis2.clustering.ClusteringAgent;
 import org.apache.axis2.description.Parameter;
@@ -38,10 +34,7 @@ import org.wso2.carbon.utils.ConfigurationContextService;
 import java.io.File;
 import java.lang.management.ManagementFactory;
 import java.lang.management.OperatingSystemMXBean;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 /**
  * This class extract server data from server admin service
@@ -52,10 +45,8 @@ public class OCAgentDataExtractor {
 			new OCAgentDataExtractor();
 	private static Logger logger = LoggerFactory.getLogger(OCAgentDataExtractor.class);
 
-	private static SynchronizationRequest synchronizationRequest;
-	private static RegistrationRequest registrationRequest;
-	private static SynchronizationResponse synchronizationResponse;
-	private static RegistrationResponse registrationResponse;
+
+	private static Map<String, Object> allOcData;
 
 	private static final double PERCENT = 100;
 	private static final double MEGA = 1000000;
@@ -303,73 +294,41 @@ public class OCAgentDataExtractor {
 		return patches;
 	}
 
-	public RegistrationResponse getRegistrationResponse() {
-		if(registrationResponse == null) {
-			registrationResponse = new RegistrationResponse();
-			logger.info("new RegistrationResponse obj");
-		}
-		return registrationResponse;
-	}
 
-	public SynchronizationResponse getSynchronizationResponse() {
-		if(synchronizationResponse == null) {
-			synchronizationResponse = new SynchronizationResponse();
-			logger.info("new SynchronizationResponse obj");
-		}
-		return synchronizationResponse;
-	}
 
-	public RegistrationRequest getRegistrationRequest() {
-		if(registrationRequest == null) {
-			registrationRequest = new RegistrationRequest();
-			logger.info("new RegistrationRequest obj");
+	public  Map<String, Object> getAllOcData() {
+		if(allOcData == null) {
+			allOcData = new HashMap<String, Object>();
 		}
 
 		try {
-			registrationRequest.setIp(this.getLocalIp());
-			registrationRequest.setServerName(this.getServerName());
-			registrationRequest.setServerVersion(this.getServerVersion());
-			registrationRequest.setDomain(this.getDomain());
-			registrationRequest.setSubDomain(this.getSubDomain());
-			registrationRequest.setAdminServiceUrl(this.getAdminServiceUrl());
-			registrationRequest.setStartTime(this.getServerStartTime());
-			registrationRequest.setOs(this.getOs());
-			registrationRequest.setTotalMemory(this.getTotalMemory());
-			registrationRequest.setCpuCount(this.getCpuCount());
-			registrationRequest.setCpuSpeed(this.getCpuSpeed());
-
-			List<String> patches = this.getPatches();
-			if (patches.size() > 0) {
-				registrationRequest.setPatches(patches);
-			}
-
-		} catch (ParameterUnavailableException e) {
-			logger.error("Failed to read registration parameter. ", e);
-		}
-		return registrationRequest;
-	}
-
-	public SynchronizationRequest getSynchronizationRequest() {
-		if(synchronizationRequest == null) {
-			synchronizationRequest = new SynchronizationRequest();
-			logger.info("new SynchronizationRequest obj");
-		}
-
-		try {
-			synchronizationRequest.setAdminServiceUrl(this.getAdminServiceUrl());
-			synchronizationRequest.setServerUpTime(this.getServerUpTime());
-			synchronizationRequest.setThreadCount(this.getThreadCount());
-			synchronizationRequest.setFreeMemory(this.getFreeMemory());
-			synchronizationRequest.setIdleCpuUsage(this.getIdelCpuUsage());
-			synchronizationRequest.setSystemCpuUsage(this.getSystemCpuUsage());
-			synchronizationRequest.setUserCpuUsage(this.getUserCpuUsage());
-			synchronizationRequest.setSystemLoadAverage(this.getSystemLoadAverage());
-			synchronizationRequest.setTenants(this.getAllTenants());
+			allOcData.put(OCAgentConstants.SYSTEM_LOCAL_IP, this.getLocalIp());
+			allOcData.put(OCAgentConstants.SERVER_NAME, this.getServerName());
+			allOcData.put(OCAgentConstants.SERVER_VERSION, this.getServerVersion());
+			allOcData.put(OCAgentConstants.SERVER_DOMAIN, this.getDomain());
+			allOcData.put(OCAgentConstants.SERVER_SUBDOMAIN, this.getSubDomain());
+			allOcData.put(OCAgentConstants.SERVER_START_TIME, this.getServerStartTime());
+			allOcData.put(OCAgentConstants.SYSTEM_OS, this.getOs());
+			allOcData.put(OCAgentConstants.SYSTEM_TOTAL_MEMORY, this.getTotalMemory());
+			allOcData.put(OCAgentConstants.SYSTEM_CPU_COUNT, this.getCpuCount());
+			allOcData.put(OCAgentConstants.SYSTEM_CPU_SPEED, this.getCpuSpeed());
+			allOcData.put(OCAgentConstants.SERVER_ADMIN_SERVICE_URL, this.getAdminServiceUrl());
+			allOcData.put(OCAgentConstants.SERVER_UPTIME, this.getServerUpTime());
+			allOcData.put(OCAgentConstants.SERVER_THREAD_COUNT, this.getThreadCount());
+			allOcData.put(OCAgentConstants.SYSTEM_FREE_MEMORY, this.getFreeMemory());
+			allOcData.put(OCAgentConstants.SYSTEM_IDLE_CPU_USAGE, this.getIdelCpuUsage());
+			allOcData.put(OCAgentConstants.SYSTEM_SYSTEM_CPU_USAGE, this.getSystemCpuUsage());
+			allOcData.put(OCAgentConstants.SYSTEM_USER_CPU_USAGE, this.getUserCpuUsage());
+			allOcData.put(OCAgentConstants.SYSTEM_LOAD_AVERAGE, this.getSystemLoadAverage());
+			allOcData.put(OCAgentConstants.SERVER_TENANTS, this.getAllTenants());
+			allOcData.put(OCAgentConstants.SERVER_PATCHES, this.getPatches());
+			allOcData.put(OCAgentConstants.SERVER_TIMESTAMP, System.currentTimeMillis());
 
 		} catch (ParameterUnavailableException e) {
 			logger.error("Failed to read synchronization parameter. ", e);
 		}
 
-		return synchronizationRequest;
+
+		return allOcData;
 	}
 }
