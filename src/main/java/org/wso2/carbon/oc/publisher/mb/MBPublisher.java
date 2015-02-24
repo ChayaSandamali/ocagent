@@ -19,7 +19,6 @@ package org.wso2.carbon.oc.publisher.mb;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wso2.carbon.oc.publisher.OCDataPublisher;
-import org.wso2.carbon.oc.publisher.OCPublisherConstants;
 
 import javax.jms.*;
 import javax.naming.Context;
@@ -57,14 +56,14 @@ public class MBPublisher implements OCDataPublisher {
 
 	@Override public void init(Map<String, String> configMap) {
 		//get set config
-		this.username = configMap.get(OCPublisherConstants.USERNAME);
-		this.password = configMap.get(OCPublisherConstants.PASSWORD);
+		this.username = configMap.get(MBConstants.USERNAME);
+		this.password = configMap.get(MBConstants.PASSWORD);
 		this.defaultHostName =
-				configMap.get(OCPublisherConstants.REPORT_HOST_NAME);
-		this.defaultPort = configMap.get(OCPublisherConstants.REPORT_PORT);
+				configMap.get(MBConstants.REPORT_HOST_NAME);
+		this.defaultPort = configMap.get(MBConstants.REPORT_PORT);
 
 		this.interval =
-				Long.parseLong(configMap.get(OCPublisherConstants.INTERVAL));
+				Long.parseLong(configMap.get(MBConstants.INTERVAL));
 		logger.info("MBPublisher init done");
 	}
 

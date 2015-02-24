@@ -24,7 +24,7 @@ import java.util.Map;
 public interface OCDataPublisher {
 
 	/**
-	 * @param configMap - c.xml data keys can find on - OCPublisherConstants
+	 * @param configMap - operations-center.xml data keys can find on - OCPublisherConstants
 	 */
 	void init(Map<String, String> configMap);
 

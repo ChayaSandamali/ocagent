@@ -31,7 +31,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wso2.carbon.oc.internal.OCAgentUtils;
 import org.wso2.carbon.oc.publisher.OCDataPublisher;
-import org.wso2.carbon.oc.publisher.OCPublisherConstants;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -49,7 +48,7 @@ public class RTPublisher implements OCDataPublisher {
 	private static final String CONTENT_TYPE = "application/json";
 	private static final String CHARACTER_SET = "UTF-8";
 	private static Logger logger = LoggerFactory.getLogger(RTPublisher.class);
-	ObjectMapper objectMapper = new ObjectMapper();
+	private ObjectMapper objectMapper = new ObjectMapper();
 	/**
 	 * The http client used to connect Operations Center.
 	 */
@@ -63,11 +62,11 @@ public class RTPublisher implements OCDataPublisher {
 
 	@Override public void init(Map<String, String> configMap) {
 		// get set config
-		String username = configMap.get(OCPublisherConstants.USERNAME);
-		String password = configMap.get(OCPublisherConstants.PASSWORD);
-		this.ocUrl = configMap.get(OCPublisherConstants.REPORT_URL);
+		String username = configMap.get(RTConstants.USERNAME);
+		String password = configMap.get(RTConstants.PASSWORD);
+		this.ocUrl = configMap.get(RTConstants.REPORT_URL);
 
-		this.interval = Long.parseLong(configMap.get(OCPublisherConstants.INTERVAL));
+		this.interval = Long.parseLong(configMap.get(RTConstants.INTERVAL));
 
 		if (StringUtils.isBlank(this.ocUrl)) {
 			throw new IllegalArgumentException("Operations Center URL is unspecified.");

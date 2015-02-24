@@ -25,8 +25,6 @@ import org.wso2.carbon.server.admin.common.IServerAdmin;
 import org.wso2.carbon.user.core.service.RealmService;
 import org.wso2.carbon.utils.ConfigurationContextService;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Executors;
@@ -58,39 +56,40 @@ import java.util.concurrent.TimeUnit;
  */
 
 public class OCAgentComponent {
-	private static Logger logger = LoggerFactory.getLogger(OCAgentComponent.class);
 	private static final ScheduledExecutorService reporterTaskExecuter =
 			Executors.newScheduledThreadPool(1);
+	private static Logger logger = LoggerFactory.getLogger(OCAgentComponent.class);
 
 	protected void activate(ComponentContext componentContext) {
 		try {
 			logger.info("Activating Operations Center Agent component.");
 
 			// get active publishers class paths
-			List<Map<String, String>> publisherList = OCAgentUtils.getActiveOcPublishersList();
+			List<Map<String, String>> activeOcPublishersList = OCAgentUtils.getActiveOcPublishersList();
 
-				for (Map<String, String> activePublisher : publisherList) {
-					OCDataPublisher publisher = null;
+			//activePublisher  > Map
+			for (Map<String, String> activeOcPublisherMap : activeOcPublishersList) {
+				OCDataPublisher ocDataPublisher = null;
 
-					Class publisherClass = Class.forName(activePublisher.get(OCAgentConstants.CLASS));
+				Class publisherClass = Class.forName(activeOcPublisherMap.get(OCAgentConstants.CLASS));
 
-					publisher = (OCDataPublisher) publisherClass.newInstance();
+				ocDataPublisher = (OCDataPublisher) publisherClass.newInstance();
 
-					publisher.init(OCAgentUtils.getOcPublisherConfigMap(activePublisher.get(OCAgentConstants.NAME)));
+				ocDataPublisher.init(OCAgentUtils.getOcPublisherConfigMap(
+						activeOcPublisherMap.get(OCAgentConstants.NAME)));
 
+				//Start reporting task as scheduled task
+				if (ocDataPublisher != null) {
 
-					//Start reporting task as scheduled task
-					if (publisher != null) {
-
-						OCAgentReporterTask ocAgentReporterTask
-								= new OCAgentReporterTask(publisher);
-						//directly from config
-						reporterTaskExecuter.scheduleAtFixedRate(ocAgentReporterTask,
-						                                         0,
-						                                         publisher.getInterval(),
-						                                         TimeUnit.MILLISECONDS);
-					}
+					OCAgentReporterTask ocAgentReporterTask
+							= new OCAgentReporterTask(ocDataPublisher);
+					//directly from config
+					reporterTaskExecuter.scheduleAtFixedRate(ocAgentReporterTask,
+					                                         0,
+					                                         ocDataPublisher.getInterval(),
+					                                         TimeUnit.MILLISECONDS);
 				}
+			}
 
 		} catch (Throwable throwable) {
 			logger.error("Failed to activate OperationsCenterAgentComponent", throwable);
@@ -111,7 +110,7 @@ public class OCAgentComponent {
 	protected void setConfigurationContextService(
 			ConfigurationContextService configurationContextService) {
 		OCAgentDataHolder.getInstance()
-		                               .setConfigurationContextService(configurationContextService);
+		                 .setConfigurationContextService(configurationContextService);
 	}
 
 	protected void unsetServerConfigurationService(
@@ -122,7 +121,7 @@ public class OCAgentComponent {
 	protected void setServerConfigurationService(
 			ServerConfigurationService serverConfigurationService) {
 		OCAgentDataHolder.getInstance()
-		                               .setServerConfigurationService(serverConfigurationService);
+		                 .setServerConfigurationService(serverConfigurationService);
 	}
 
 	protected void unsetServerAdminService(IServerAdmin serverAdmin) {

@@ -22,7 +22,6 @@ import org.wso2.carbon.databridge.agent.thrift.DataPublisher;
 import org.wso2.carbon.databridge.agent.thrift.exception.AgentException;
 import org.wso2.carbon.databridge.commons.exception.*;
 import org.wso2.carbon.oc.publisher.OCDataPublisher;
-import org.wso2.carbon.oc.publisher.OCPublisherConstants;
 import org.wso2.carbon.utils.CarbonUtils;
 
 import java.net.MalformedURLException;
@@ -45,11 +44,11 @@ public class BAMPublisher implements OCDataPublisher {
 
 	@Override public void init(Map<String, String> configMap) {
 		//load xml config
-		this.username = configMap.get(OCPublisherConstants.USERNAME);
-		this.password = configMap.get(OCPublisherConstants.PASSWORD);
-		this.defaultHostName = configMap.get(OCPublisherConstants.REPORT_HOST_NAME);
-		this.thriftPort = configMap.get(OCPublisherConstants.THRIFT_PORT);
-		this.interval = Long.parseLong(configMap.get(OCPublisherConstants.INTERVAL));
+		this.username = configMap.get(BAMConstants.USERNAME);
+		this.password = configMap.get(BAMConstants.PASSWORD);
+		this.defaultHostName = configMap.get(BAMConstants.REPORT_HOST_NAME);
+		this.thriftPort = configMap.get(BAMConstants.THRIFT_PORT);
+		this.interval = Long.parseLong(configMap.get(BAMConstants.INTERVAL));
 
 		try {
 			synchronized (BAMPublisher.class) {

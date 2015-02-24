@@ -21,15 +21,11 @@ package org.wso2.carbon.oc.internal;
  */
 public class OCAgentConstants {
 
-	public static final String OC_XML = "oc.xml";
-
-	public static String OC_PUBLISHER_ROOT_XPATH = "//Publishers//Publisher";
-
+	public static final String OC_XML = "operations-center.xml";
 	//general publisher related attributes
 	public static final String ENABLE = "Enable";
 	public static final String CLASS = "Class";
 	public static final String NAME = "Name";
-
 	//all system level keys of data map
 	public static final String SYSTEM_LOCAL_IP = "ip";
 	public static final String SYSTEM_OS = "os";
@@ -41,8 +37,6 @@ public class OCAgentConstants {
 	public static final String SYSTEM_USER_CPU_USAGE = "userCpuUsage";
 	public static final String SYSTEM_SYSTEM_CPU_USAGE = "systemCpuUsage";
 	public static final String SYSTEM_LOAD_AVERAGE = "systemLoadAverage";
-
-
 	//all server level keys of data map
 	public static final String SERVER_NAME = "serverName";
 	public static final String SERVER_VERSION = "serverVersion";
@@ -55,6 +49,8 @@ public class OCAgentConstants {
 	public static final String SERVER_TENANTS = "tenants";
 	public static final String SERVER_TIMESTAMP = "timestamp";
 	public static final String SERVER_PATCHES = "patches";
+	public static String OC_PUBLISHER_ROOT_XPATH = "//Publishers//Publisher";
 
-	private OCAgentConstants() {}
+	private OCAgentConstants() {
+	}
 }

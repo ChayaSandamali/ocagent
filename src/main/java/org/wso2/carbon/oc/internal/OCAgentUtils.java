@@ -21,7 +21,6 @@ import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import org.wso2.carbon.oc.publisher.OCPublisherConstants;
 import org.wso2.carbon.server.admin.service.ServerAdmin;
 import org.wso2.carbon.utils.CarbonUtils;
 import org.xml.sax.SAXException;
@@ -32,10 +31,13 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.xpath.*;
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /*
-    Provide access to configurations in oc.xml [Publisher] data
+    Provide access to configurations in operations-center.xml [Publisher] data
     Allows to invoke commands in server restart, shutdown
 */
 
@@ -44,10 +46,12 @@ public class OCAgentUtils {
 
 	private static Document ocXmlDocument;
 
-	private OCAgentUtils() {}
+	private OCAgentUtils() {
+	}
 
 	/**
 	 * This method extract active publisher's class path
+	 *
 	 * @return List<String> - class package path list
 	 */
 	public static List<Map<String, String>> getActiveOcPublishersList() {
@@ -56,7 +60,7 @@ public class OCAgentUtils {
 		List<Map<String, String>> publisherList = getNodeMapList(
 				eval(doc, OCAgentConstants.OC_PUBLISHER_ROOT_XPATH));
 		for (Map<String, String> publisher : publisherList) {
-			if(Boolean.valueOf(publisher.get(OCAgentConstants.ENABLE).toString())) {
+			if (Boolean.valueOf(publisher.get(OCAgentConstants.ENABLE).toString())) {
 				activePublisherList.add(publisher);
 			}
 		}
@@ -64,7 +68,6 @@ public class OCAgentUtils {
 	}
 
 	/**
-	 *
 	 * @param publisherName - publisher name from oc xml config
 	 * @return Map<String, String> - key, val pair of publisher info
 	 */
@@ -74,7 +77,7 @@ public class OCAgentUtils {
 		List<Map<String, String>> publisherList = getNodeMapList(
 				eval(doc, OCAgentConstants.OC_PUBLISHER_ROOT_XPATH));
 		for (Map<String, String> publisher : publisherList) {
-			if(publisher.get(OCAgentConstants.NAME).equalsIgnoreCase(publisherName)) {
+			if (publisher.get(OCAgentConstants.NAME).equalsIgnoreCase(publisherName)) {
 				resultMap = publisher;
 				break;
 			}
@@ -83,15 +86,16 @@ public class OCAgentUtils {
 	}
 
 	/**
-	 *
-	 * @return Document - oc.xml document
+	 * @return Document - operations-center.xml document
 	 */
 	private static Document getOcXmlDocument() {
-		if(ocXmlDocument == null) {
+		if (ocXmlDocument == null) {
 			try {
-				File file = new File(CarbonUtils.getCarbonHome() + "/repository/conf/" + OCAgentConstants.OC_XML);
+				File file = new File(CarbonUtils.getCarbonHome() + "/repository/conf/" +
+				                     OCAgentConstants.OC_XML);
 
-				DocumentBuilder dBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+				DocumentBuilder dBuilder =
+						DocumentBuilderFactory.newInstance().newDocumentBuilder();
 
 				ocXmlDocument = dBuilder.parse(file);
 
@@ -107,28 +111,25 @@ public class OCAgentUtils {
 	}
 
 	/**
-	 *
-	 * @param doc - oc.xml document
+	 * @param doc     - operations-center.xml document
 	 * @param pathStr - xpath
 	 * @return NodeList - xml attr, value
 	 */
-	private static NodeList eval(final Document doc, final String pathStr){
+	private static NodeList eval(final Document doc, final String pathStr) {
 		NodeList resultList = null;
 		try {
 			final XPath xpath = XPathFactory.newInstance().newXPath();
 			final XPathExpression expr = xpath.compile(pathStr);
-			resultList =  (NodeList) expr.evaluate(doc, XPathConstants.NODESET);
-		}
-		catch (XPathExpressionException e) {
+			resultList = (NodeList) expr.evaluate(doc, XPathConstants.NODESET);
+		} catch (XPathExpressionException e) {
 			logger.info(e.getMessage(), e);
 		}
 		return resultList;
 	}
 
 	/**
-	 *
 	 * @param nodes - xml attr, values
-	 * @return List<Map<String, String>> - oc.xml attr, value as list of map
+	 * @return List<Map<String, String>> - operations-center.xml attr, value as list of map
 	 */
 	private static List<Map<String, String>> getNodeMapList(final NodeList nodes) {
 		final List<Map<String, String>> out = new ArrayList<Map<String, String>>();
@@ -138,16 +139,14 @@ public class OCAgentUtils {
 			Map<String, String> childMap = new HashMap<String, String>();
 			for (int j = 0; j < children.getLength(); j++) {
 				Node child = children.item(j);
-				if (child.getNodeType() == Node.ELEMENT_NODE)
+				if (child.getNodeType() == Node.ELEMENT_NODE) {
 					childMap.put(child.getNodeName(), child.getTextContent());
+				}
 			}
 			out.add(childMap);
 		}
 		return out;
 	}
-
-
-
 
 	/**
 	 * @param command "RESTART", "SHUTDOWN" etc..

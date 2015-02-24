@@ -18,7 +18,6 @@ package org.wso2.carbon.oc.internal;
 
 import com.jezhumble.javasysmon.JavaSysMon;
 import org.apache.axiom.om.OMElement;
-import org.wso2.carbon.user.api.Tenant;
 import org.apache.axis2.clustering.ClusteringAgent;
 import org.apache.axis2.description.Parameter;
 import org.slf4j.Logger;
@@ -27,6 +26,7 @@ import org.wso2.carbon.base.api.ServerConfigurationService;
 import org.wso2.carbon.oc.internal.exceptions.ParameterUnavailableException;
 import org.wso2.carbon.server.admin.common.ServerUpTime;
 import org.wso2.carbon.server.admin.service.ServerAdmin;
+import org.wso2.carbon.user.api.Tenant;
 import org.wso2.carbon.user.api.UserStoreException;
 import org.wso2.carbon.utils.CarbonUtils;
 import org.wso2.carbon.utils.ConfigurationContextService;
@@ -41,17 +41,9 @@ import java.util.*;
  */
 
 public class OCAgentDataExtractor {
-	private static OCAgentDataExtractor instance =
-			new OCAgentDataExtractor();
-	private static Logger logger = LoggerFactory.getLogger(OCAgentDataExtractor.class);
-
-
-	private static Map<String, Object> allOcData;
-
 	private static final double PERCENT = 100;
 	private static final double MEGA = 1000000;
 	private static final double GIGA = 1000000000;
-
 	private static final String LOCAL_IP = "carbon.local.ip";
 	private static final String MGT_TRANSPORT_HTTPS_PORT = "mgt.transport.https.port";
 	private static final String NAME = "Name";
@@ -64,7 +56,10 @@ public class OCAgentDataExtractor {
 	private static final String PATCH_PATH =
 			CarbonUtils.getCarbonHome() + "/repository/components/patches";
 	private static final String PATCH = "patch";
-
+	private static OCAgentDataExtractor instance =
+			new OCAgentDataExtractor();
+	private static Logger logger = LoggerFactory.getLogger(OCAgentDataExtractor.class);
+	private static Map<String, Object> allOcData;
 	private JavaSysMon javaSysMon = new JavaSysMon();
 	private String os;
 	private int cpuCount;
@@ -168,11 +163,10 @@ public class OCAgentDataExtractor {
 					while (childElements.hasNext()) {
 						OMElement childElement = (OMElement) childElements.next();
 						if (childElement != null) {
-							String propertyAttributeValue = childElement.
-									                                            getAttributeValue(
-											                                            childElement
-													                                            .resolveQName(
-															                                            PROPERTY_NAME));
+							String propertyAttributeValue = childElement.getAttributeValue(
+									childElement
+											.resolveQName(
+													PROPERTY_NAME));
 							if (propertyAttributeValue != null &&
 							    propertyAttributeValue.equalsIgnoreCase(SUB_DOMAIN)) {
 								subDomain = (childElement.getAttributeValue(
@@ -272,9 +266,10 @@ public class OCAgentDataExtractor {
 	public Tenant[] getAllTenants() {
 		Tenant[] tenants = null;
 		try {
-			tenants =  OCAgentDataHolder.getInstance().getRealmService().getTenantManager().getAllTenants();
+			tenants = OCAgentDataHolder.getInstance().getRealmService().getTenantManager()
+			                           .getAllTenants();
 		} catch (UserStoreException e) {
-			logger.info("problem while gettiing all tenants", e);
+			logger.info("Failed to retrieve all tenants", e);
 		}
 		return tenants;
 	}
@@ -294,10 +289,8 @@ public class OCAgentDataExtractor {
 		return patches;
 	}
 
-
-
-	public  Map<String, Object> getAllOcData() {
-		if(allOcData == null) {
+	public Map<String, Object> getAllOcData() {
+		if (allOcData == null) {
 			allOcData = new HashMap<String, Object>();
 		}
 
@@ -325,9 +318,8 @@ public class OCAgentDataExtractor {
 			allOcData.put(OCAgentConstants.SERVER_TIMESTAMP, System.currentTimeMillis());
 
 		} catch (ParameterUnavailableException e) {
-			logger.error("Failed to read synchronization parameter. ", e);
+			logger.error("Failed to read oc data parameters. ", e);
 		}
-
 
 		return allOcData;
 	}

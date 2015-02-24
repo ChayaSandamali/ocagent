@@ -20,7 +20,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wso2.carbon.base.api.ServerConfigurationService;
 import org.wso2.carbon.server.admin.common.IServerAdmin;
-import org.wso2.carbon.statistics.services.StatisticsAdmin;
 import org.wso2.carbon.user.core.service.RealmService;
 import org.wso2.carbon.utils.ConfigurationContextService;
 
@@ -43,14 +42,8 @@ public class OCAgentDataHolder {
 		return instance;
 	}
 
-
 	public ConfigurationContextService getConfigurationContextService() {
 		return configurationContextService;
-	}
-
-	public void setServerConfigurationService(
-			ServerConfigurationService serverConfigurationService) {
-		this.serverConfigurationService = serverConfigurationService;
 	}
 
 	public void setConfigurationContextService(
@@ -60,6 +53,11 @@ public class OCAgentDataHolder {
 
 	public ServerConfigurationService getServerConfigurationService() {
 		return serverConfigurationService;
+	}
+
+	public void setServerConfigurationService(
+			ServerConfigurationService serverConfigurationService) {
+		this.serverConfigurationService = serverConfigurationService;
 	}
 
 	public IServerAdmin getServerAdmin() {
