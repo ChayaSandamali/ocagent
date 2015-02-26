@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-package org.wso2.carbon.oc.publisher.mb;
+package org.wso2.carbon.oc.agent.publisher.mb;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.wso2.carbon.oc.publisher.OCDataPublisher;
+import org.wso2.carbon.oc.agent.publisher.OCDataPublisher;
 
 import javax.jms.*;
 import javax.naming.Context;

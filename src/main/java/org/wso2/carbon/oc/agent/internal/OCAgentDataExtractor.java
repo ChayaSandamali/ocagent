@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.wso2.carbon.oc.internal;
+package org.wso2.carbon.oc.agent.internal;
 
 import com.jezhumble.javasysmon.JavaSysMon;
 import org.apache.axiom.om.OMElement;
@@ -23,7 +23,8 @@ import org.apache.axis2.description.Parameter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wso2.carbon.base.api.ServerConfigurationService;
-import org.wso2.carbon.oc.internal.exceptions.ParameterUnavailableException;
+import org.wso2.carbon.oc.agent.internal.exceptions.ParameterUnavailableException;
+import org.wso2.carbon.oc.agent.message.OCMessage;
 import org.wso2.carbon.server.admin.common.ServerUpTime;
 import org.wso2.carbon.server.admin.service.ServerAdmin;
 import org.wso2.carbon.user.api.Tenant;
@@ -60,6 +61,7 @@ public class OCAgentDataExtractor {
 			new OCAgentDataExtractor();
 	private static Logger logger = LoggerFactory.getLogger(OCAgentDataExtractor.class);
 	private static Map<String, Object> allOcData;
+	private static OCMessage ocMessage;
 	private JavaSysMon javaSysMon = new JavaSysMon();
 	private String os;
 	private int cpuCount;
@@ -200,7 +202,7 @@ public class OCAgentDataExtractor {
 		return javaSysMon.physical().getFreeBytes() / MEGA;
 	}
 
-	public double getIdelCpuUsage() {
+	public double getIdleCpuUsage() {
 		long idle = javaSysMon.cpuTimes().getIdleMillis();
 		double total = javaSysMon.cpuTimes().getTotalMillis();
 		return (idle / total) * PERCENT;
@@ -263,7 +265,7 @@ public class OCAgentDataExtractor {
 		return operatingSystemMXBean.getSystemLoadAverage();
 	}
 
-	public Tenant[] getAllTenants() {
+	public Tenant[] getTenants() {
 		Tenant[] tenants = null;
 		try {
 			tenants = OCAgentDataHolder.getInstance().getRealmService().getTenantManager()
@@ -309,11 +311,11 @@ public class OCAgentDataExtractor {
 			allOcData.put(OCAgentConstants.SERVER_UPTIME, this.getServerUpTime());
 			allOcData.put(OCAgentConstants.SERVER_THREAD_COUNT, this.getThreadCount());
 			allOcData.put(OCAgentConstants.SYSTEM_FREE_MEMORY, this.getFreeMemory());
-			allOcData.put(OCAgentConstants.SYSTEM_IDLE_CPU_USAGE, this.getIdelCpuUsage());
+			allOcData.put(OCAgentConstants.SYSTEM_IDLE_CPU_USAGE, this.getIdleCpuUsage());
 			allOcData.put(OCAgentConstants.SYSTEM_SYSTEM_CPU_USAGE, this.getSystemCpuUsage());
 			allOcData.put(OCAgentConstants.SYSTEM_USER_CPU_USAGE, this.getUserCpuUsage());
 			allOcData.put(OCAgentConstants.SYSTEM_LOAD_AVERAGE, this.getSystemLoadAverage());
-			allOcData.put(OCAgentConstants.SERVER_TENANTS, this.getAllTenants());
+			allOcData.put(OCAgentConstants.SERVER_TENANTS, this.getTenants());
 			allOcData.put(OCAgentConstants.SERVER_PATCHES, this.getPatches());
 			allOcData.put(OCAgentConstants.SERVER_TIMESTAMP, System.currentTimeMillis());
 
@@ -322,5 +324,40 @@ public class OCAgentDataExtractor {
 		}
 
 		return allOcData;
+	}
+
+	public OCMessage getOcMessage() {
+		if(ocMessage == null) {
+			ocMessage = new OCMessage();
+		}
+
+		try {
+			ocMessage.setLocalIp(this.getLocalIp());
+			ocMessage.setServerName(this.getServerName());
+			ocMessage.setServerVersion(this.getServerVersion());
+			ocMessage.setDomain(this.getDomain());
+			ocMessage.setSubDomain(this.getSubDomain());
+			ocMessage.setServerStartTime(this.getServerStartTime());
+			ocMessage.setOs(this.getOs());
+			ocMessage.setTotalMemory(this.getTotalMemory());
+			ocMessage.setFreeMemory(this.getFreeMemory());
+			ocMessage.setCpuCount(this.getCpuCount());
+			ocMessage.setCpuSpeed(this.getCpuSpeed());
+			ocMessage.setAdminServiceUrl(this.getAdminServiceUrl());
+			ocMessage.setThreadCount(this.getThreadCount());
+			ocMessage.setSystemCpuUsage(this.getSystemCpuUsage());
+			ocMessage.setIdleCpuUsage(this.getIdleCpuUsage());
+			ocMessage.setUserCpuUsage(this.getUserCpuUsage());
+			ocMessage.setSystemLoadAverage(this.getSystemLoadAverage());
+			ocMessage.setTenants(this.getTenants());
+			ocMessage.setPatches(this.getPatches());
+			ocMessage.setCurrentTimeMills(System.currentTimeMillis());
+
+
+		} catch (ParameterUnavailableException e) {
+			logger.error("Failed to read oc data parameters. ", e);
+		}
+
+		return ocMessage;
 	}
 }

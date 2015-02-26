@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-package org.wso2.carbon.oc.publisher.rt;
+package org.wso2.carbon.oc.agent.publisher.rt;
 
 import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.wso2.carbon.oc.internal.OCAgentConstants;
+import org.wso2.carbon.oc.agent.internal.OCAgentConstants;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -87,6 +87,7 @@ public class RTMessageUtil {
 	static String getRegistrationRequestMessage(Map<String, Object> dataMap) {
 		Map<String, Object> regDataMap = new HashMap<String, Object>();
 
+//		put full var name
 		regDataMap.put(OCAgentConstants.SYSTEM_LOCAL_IP,
 		               dataMap.get(OCAgentConstants.SYSTEM_LOCAL_IP));
 		regDataMap.put(OCAgentConstants.SERVER_NAME, dataMap.get(OCAgentConstants.SERVER_NAME));

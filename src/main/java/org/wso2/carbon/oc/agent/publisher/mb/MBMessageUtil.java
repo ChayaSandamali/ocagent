@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-package org.wso2.carbon.oc.publisher.mb;
+package org.wso2.carbon.oc.agent.publisher.mb;
 
 import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.wso2.carbon.oc.internal.OCAgentConstants;
+import org.wso2.carbon.oc.agent.internal.OCAgentConstants;
 
 import java.io.IOException;
 import java.util.HashMap;

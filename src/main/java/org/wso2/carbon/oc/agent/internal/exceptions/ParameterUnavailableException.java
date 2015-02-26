@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.wso2.carbon.oc.internal.exceptions;
+package org.wso2.carbon.oc.agent.internal.exceptions;
 
 /**
  * Exception for handle extracting data

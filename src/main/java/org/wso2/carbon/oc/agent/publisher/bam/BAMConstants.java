@@ -1,14 +1,13 @@
-package org.wso2.carbon.oc.publisher.bam;
+package org.wso2.carbon.oc.agent.publisher.bam;
 
 /**
- * Created by noelyahan on 2/23/15.
+ * Holds bam related constants
  */
 public class BAMConstants {
 
 
-	//publisher xml attrs
+	//bam publisher specific xml attrs
 	public static final String REPORT_HOST_NAME = "ReportHostName";
-	public static final String REPORT_PORT = "ReportHttpPort";
 	public static final String THRIFT_PORT = "ThriftPort";
 	public static final String THRIFT_SSL_PORT = "ThriftSSLPort";
 	public static final String USERNAME = "Username";

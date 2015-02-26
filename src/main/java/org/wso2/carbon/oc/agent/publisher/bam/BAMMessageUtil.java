@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-package org.wso2.carbon.oc.publisher.bam;
+package org.wso2.carbon.oc.agent.publisher.bam;
 
 import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.wso2.carbon.oc.internal.OCAgentConstants;
+import org.wso2.carbon.oc.agent.internal.OCAgentConstants;
 
 import java.io.IOException;
 import java.util.*;
@@ -152,7 +152,7 @@ public class BAMMessageUtil {
 			Map.Entry<String, Object> entry = (Map.Entry<String, Object>) i.next();
 			String key = entry.getKey();
 			Object value = entry.getValue();
-			String dataType = "";
+			String dataType = null;
 
 			if (isNumber(value.toString())) {
 				dataType = "DOUBLE";

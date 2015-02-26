@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.wso2.carbon.oc.publisher.rt;
+package org.wso2.carbon.oc.agent.publisher.rt;
 
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpStatus;
@@ -29,9 +29,10 @@ import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.type.TypeReference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.wso2.carbon.oc.internal.OCAgentUtils;
-import org.wso2.carbon.oc.publisher.OCDataPublisher;
+import org.wso2.carbon.oc.agent.internal.OCAgentUtils;
+import org.wso2.carbon.oc.agent.publisher.OCDataPublisher;
 
+import javax.xml.ws.http.HTTPException;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
@@ -98,26 +99,35 @@ public class RTPublisher implements OCDataPublisher {
 		String jsonString = RTMessageUtil.getRegistrationRequestMessage(dataMap);
 
 		String responseBody =
-				sendPostRequest(ocUrl + REGISTRATION_PATH, jsonString, HttpStatus.SC_CREATED);
+				null;
+		try {
+			responseBody =
+					sendPostRequest(ocUrl + REGISTRATION_PATH, jsonString, HttpStatus.SC_CREATED);
+		} catch (IOException e) {
+			logger.error("RTPublisher connection down while registering: ", e);
+			isRegistered = false;
+		}
 		if (responseBody != null && responseBody.length() > 0) {
-			Map<String, String> regResMap = new HashMap<String, String>();
+			Map<String, String> regResMap;
 			try {
 
 				regResMap = objectMapper
 						.readValue(responseBody, new TypeReference<HashMap<String, String>>() {
 						});
 
+				isRegistered = true;
 			} catch (IOException e) {
 				logger.error("Failed to read values from RegistrationResponse", e);
+				isRegistered = false;
 			}
 
-			if (regResMap != null) {
-				isRegistered = true;
-
-				logger.info("Registered in Operations Center successfully.");
-			} else {
-				logger.error("Unable receive JSON registration response.");
-			}
+//			if (regResMap != null) {
+//				isRegistered = true;
+//
+//				logger.info("Registered in Operations Center successfully.");
+//			} else {
+//				logger.error("Unable receive JSON registration response.");
+//			}
 		}
 	}
 
@@ -129,15 +139,24 @@ public class RTPublisher implements OCDataPublisher {
 		String jsonString = RTMessageUtil.getSynchronizationRequestMessage(dataMap);
 
 		String responseBody =
-				sendPostRequest(ocUrl + SYNCHRONIZATION_PATH, jsonString, HttpStatus.SC_OK);
+				null;
+		try {
+			responseBody =
+					sendPostRequest(ocUrl + SYNCHRONIZATION_PATH, jsonString, HttpStatus.SC_OK);
+		} catch (IOException e) {
+			logger.error("RTPublisher connection down while sync messaging: ", e);
+			isRegistered = false;
+		}
 		if (responseBody != null && responseBody.length() > 0) {
 			Map<String, String> synResMap;
 			try {
 				synResMap = objectMapper
 						.readValue(responseBody, new TypeReference<HashMap<String, String>>() {
 						});
+				isRegistered = true;
 			} catch (IOException e) {
 				logger.error("Failed to read values from SynchronizationResponse", e);
+				isRegistered = false;
 				return;
 			}
 
@@ -148,7 +167,6 @@ public class RTPublisher implements OCDataPublisher {
 					OCAgentUtils.performAction(command);
 				} else if ("error".equals(synResMap.get(""))) {
 					logger.error("Unable to synchronize properly.");
-					isRegistered = false;
 				}
 
 			} else {
@@ -165,7 +183,7 @@ public class RTPublisher implements OCDataPublisher {
 	 * @param expected - expected http status code
 	 * @return
 	 */
-	public String sendPostRequest(String url, String request, int expected) {
+	public String sendPostRequest(String url, String request, int expected) throws IOException {
 		PostMethod postMethod = new PostMethod(url);
 		try {
 			RequestEntity entity = new StringRequestEntity(request, CONTENT_TYPE, CHARACTER_SET);
@@ -173,7 +191,7 @@ public class RTPublisher implements OCDataPublisher {
 			if (logger.isTraceEnabled()) {
 				logger.trace("Sending POST request. " + request);
 			}
-			try {
+			//try {
 				int statusCode = httpClient.executeMethod(postMethod);
 				if (statusCode == expected) {
 					String responseBody = postMethod.getResponseBodyAsString();
@@ -184,10 +202,9 @@ public class RTPublisher implements OCDataPublisher {
 				} else {
 					logger.error("Request failed with status Code : " + statusCode);
 				}
-			} catch (IOException e) {
-				logger.error("RTPublisher connection down: ", e);
-				isRegistered = false;
-			}
+			//} catch (IOException e) {
+				//logger.error("RTPublisher connection down: ", e);
+			//}
 		} catch (UnsupportedEncodingException e) {
 			logger.error("Failed to register with Operations Center", e);
 		} finally {

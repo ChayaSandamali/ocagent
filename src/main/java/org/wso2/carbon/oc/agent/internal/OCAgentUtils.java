@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.wso2.carbon.oc.internal;
+package org.wso2.carbon.oc.agent.internal;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,6 +46,11 @@ public class OCAgentUtils {
 
 	private static Document ocXmlDocument;
 
+	private static final String GRACEFUL_SHUTDOWN = "GRACEFUL_SHUTDOWN";
+	private static final String GRACEFUL_RESTART = "GRACEFUL_RESTART";
+	private static final String SHUTDOWN = "SHUTDOWN";
+	private static final String RESTART = "RESTART";
+
 	private OCAgentUtils() {
 	}
 
@@ -55,15 +60,9 @@ public class OCAgentUtils {
 	 * @return List<String> - class package path list
 	 */
 	public static List<Map<String, String>> getActiveOcPublishersList() {
-		List<Map<String, String>> activePublisherList = new ArrayList<Map<String, String>>();
 		Document doc = OCAgentUtils.getOcXmlDocument();
-		List<Map<String, String>> publisherList = getNodeMapList(
+		List<Map<String, String>> activePublisherList = getNodeMapList(
 				eval(doc, OCAgentConstants.OC_PUBLISHER_ROOT_XPATH));
-		for (Map<String, String> publisher : publisherList) {
-			if (Boolean.valueOf(publisher.get(OCAgentConstants.ENABLE).toString())) {
-				activePublisherList.add(publisher);
-			}
-		}
 		return activePublisherList;
 	}
 
@@ -151,19 +150,20 @@ public class OCAgentUtils {
 	/**
 	 * @param command "RESTART", "SHUTDOWN" etc..
 	 */
+
 	public static void performAction(String command) {
 		ServerAdmin serverAdmin =
 				(ServerAdmin) OCAgentDataHolder.getInstance().getServerAdmin();
 		if (serverAdmin != null) {
 			try {
-				if ("RESTART".equals(command)) {
+				if (RESTART.equals(command)) {
 					serverAdmin.restart();
-				} else if ("GRACEFUL_RESTART".equals(command)) {
+				} else if (GRACEFUL_RESTART.equals(command)) {
 					serverAdmin.restartGracefully();
-				} else if ("SHUTDOWN".equals(command)) {
+				} else if (SHUTDOWN.equals(command)) {
 					serverAdmin.shutdown();
-				} else if ("GRACEFUL_SHUTDOWN".equals(command)) {
-					serverAdmin.shutdown();
+				} else if (GRACEFUL_SHUTDOWN.equals(command)) {
+					serverAdmin.shutdownGracefully();
 				} else {
 					logger.error("Unknown command received. [" + command + "]");
 				}

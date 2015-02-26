@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.wso2.carbon.oc.internal;
+package org.wso2.carbon.oc.agent.internal;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,7 +27,6 @@ public class OCAgentDataHolder {
 	private static OCAgentDataHolder instance = new OCAgentDataHolder();
 	private static Logger logger = LoggerFactory.getLogger(OCAgentDataHolder.class);
 
-	//    private OperationsCenterConnector operationsCenterConnector;
 	private ConfigurationContextService configurationContextService;
 	private ServerConfigurationService serverConfigurationService;
 	private IServerAdmin serverAdmin;           // server information, commands

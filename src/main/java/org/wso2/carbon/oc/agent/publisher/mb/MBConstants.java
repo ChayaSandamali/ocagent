@@ -1,4 +1,4 @@
-package org.wso2.carbon.oc.publisher.mb;
+package org.wso2.carbon.oc.agent.publisher.mb;
 
 /**
  * Holds message broker related constants
@@ -6,7 +6,7 @@ package org.wso2.carbon.oc.publisher.mb;
 public class MBConstants {
 
 
-	//publisher xml attrs
+	//mb publisher specific xml attrs
 	public static final String REPORT_HOST_NAME = "ReportHostName";
 	public static final String REPORT_PORT = "ReportHttpPort";
 	public static final String USERNAME = "Username";

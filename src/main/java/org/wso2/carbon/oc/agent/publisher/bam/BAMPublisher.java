@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 
-package org.wso2.carbon.oc.publisher.bam;
+package org.wso2.carbon.oc.agent.publisher.bam;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wso2.carbon.databridge.agent.thrift.DataPublisher;
 import org.wso2.carbon.databridge.agent.thrift.exception.AgentException;
 import org.wso2.carbon.databridge.commons.exception.*;
-import org.wso2.carbon.oc.publisher.OCDataPublisher;
+import org.wso2.carbon.oc.agent.publisher.OCDataPublisher;
 import org.wso2.carbon.utils.CarbonUtils;
 
 import java.net.MalformedURLException;

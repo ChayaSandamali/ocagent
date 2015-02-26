@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.wso2.carbon.oc.internal;
+package org.wso2.carbon.oc.agent.internal;
 
 /**
  * Holds constants related to oc agent
@@ -23,7 +23,6 @@ public class OCAgentConstants {
 
 	public static final String OC_XML = "operations-center.xml";
 	//general publisher related attributes
-	public static final String ENABLE = "Enable";
 	public static final String CLASS = "Class";
 	public static final String NAME = "Name";
 	//all system level keys of data map
@@ -49,7 +48,7 @@ public class OCAgentConstants {
 	public static final String SERVER_TENANTS = "tenants";
 	public static final String SERVER_TIMESTAMP = "timestamp";
 	public static final String SERVER_PATCHES = "patches";
-	public static String OC_PUBLISHER_ROOT_XPATH = "//Publishers//Publisher";
+	public static final String OC_PUBLISHER_ROOT_XPATH = "//OperationsCenter//Publishers//Publisher";
 
 	private OCAgentConstants() {
 	}

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.wso2.carbon.oc.publisher;
+package org.wso2.carbon.oc.agent.publisher;
 
 import java.util.Map;
 
@@ -30,6 +30,7 @@ public interface OCDataPublisher {
 
 	/**
 	 * publish data to endpoint/resource
+	 * @param dataMap Map<String, Object> - all oc related data
 	 */
 	void publish(Map<String, Object> dataMap);
 
@@ -37,4 +38,5 @@ public interface OCDataPublisher {
 	 * @return interval time mili-seconds - periodical data publishing time
 	 */
 	long getInterval();
+
 }

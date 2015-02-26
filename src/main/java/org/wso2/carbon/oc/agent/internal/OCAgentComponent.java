@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-package org.wso2.carbon.oc.internal;
+package org.wso2.carbon.oc.agent.internal;
 
 import org.osgi.service.component.ComponentContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wso2.carbon.base.api.ServerConfigurationService;
-import org.wso2.carbon.oc.publisher.OCDataPublisher;
+import org.wso2.carbon.oc.agent.publisher.OCDataPublisher;
 import org.wso2.carbon.server.admin.common.IServerAdmin;
 import org.wso2.carbon.user.core.service.RealmService;
 import org.wso2.carbon.utils.ConfigurationContextService;
@@ -64,10 +64,10 @@ public class OCAgentComponent {
 		try {
 			logger.info("Activating Operations Center Agent component.");
 
-			// get active publishers class paths
+			// get active publishers config list
 			List<Map<String, String>> activeOcPublishersList = OCAgentUtils.getActiveOcPublishersList();
 
-			//activePublisher  > Map
+			//active publisher config map
 			for (Map<String, String> activeOcPublisherMap : activeOcPublishersList) {
 				OCDataPublisher ocDataPublisher = null;
 
@@ -75,20 +75,19 @@ public class OCAgentComponent {
 
 				ocDataPublisher = (OCDataPublisher) publisherClass.newInstance();
 
+				//TODO Config
 				ocDataPublisher.init(OCAgentUtils.getOcPublisherConfigMap(
 						activeOcPublisherMap.get(OCAgentConstants.NAME)));
 
 				//Start reporting task as scheduled task
-				if (ocDataPublisher != null) {
 
 					OCAgentReporterTask ocAgentReporterTask
 							= new OCAgentReporterTask(ocDataPublisher);
-					//directly from config
+
 					reporterTaskExecuter.scheduleAtFixedRate(ocAgentReporterTask,
 					                                         0,
 					                                         ocDataPublisher.getInterval(),
 					                                         TimeUnit.MILLISECONDS);
-				}
 			}
 
 		} catch (Throwable throwable) {
