@@ -60,9 +60,15 @@ public class OCAgentUtils {
 	 * @return List<String> - class package path list
 	 */
 	public static List<Map<String, String>> getActiveOcPublishersList() {
+		logger.info("++++++++++++++++++++++++++++++++++++++++++++++==");
 		Document doc = OCAgentUtils.getOcXmlDocument();
 		List<Map<String, String>> activePublisherList = getNodeMapList(
 				eval(doc, OCAgentConstants.OC_PUBLISHER_ROOT_XPATH));
+		for (Map<String, String> x: activePublisherList) {
+			logger.info(x.get(OCAgentConstants.CLASS));
+			logger.info(x.get(OCAgentConstants.NAME));
+		}
+		logger.info("++++++++++++++++++++++++++++++++++++++++++++++==");
 		return activePublisherList;
 	}
 

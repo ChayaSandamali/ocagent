@@ -62,6 +62,7 @@ public class OCAgentComponent {
 
 	protected void activate(ComponentContext componentContext) {
 		try {
+			logger.info("++++++++++++++++++++++++++++++++++++++++++++++==");
 			logger.info("Activating Operations Center Agent component.");
 
 			// get active publishers config list

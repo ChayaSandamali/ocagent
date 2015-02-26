@@ -171,10 +171,12 @@
                         <Private-Package>
                             org.wso2.carbon.oc.agent.internal.*,
                             org.wso2.carbon.oc.agent.publisher.*,
+                            org.wso2.carbon.oc.agent.message.*,
                         </Private-Package>
                         <Export-Package>
                             !org.wso2.carbon.oc.agent.publisher.*,
                             !org.wso2.carbon.oc.agent.internal.*,
+                            !org.wso2.carbon.oc.agent.message.*,
                             org.wso2.andes.jndi.*
                         </Export-Package>
                         <Import-Package>
