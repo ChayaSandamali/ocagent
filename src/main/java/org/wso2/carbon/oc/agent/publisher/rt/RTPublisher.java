@@ -22,6 +22,7 @@ import org.apache.commons.httpclient.MultiThreadedHttpConnectionManager;
 import org.apache.commons.httpclient.UsernamePasswordCredentials;
 import org.apache.commons.httpclient.auth.AuthScope;
 import org.apache.commons.httpclient.methods.PostMethod;
+import org.apache.commons.httpclient.methods.PutMethod;
 import org.apache.commons.httpclient.methods.RequestEntity;
 import org.apache.commons.httpclient.methods.StringRequestEntity;
 import org.apache.commons.lang.StringUtils;
@@ -29,13 +30,17 @@ import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.type.TypeReference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.wso2.carbon.oc.agent.internal.OCAgentConfig;
+import org.wso2.carbon.oc.agent.internal.OCAgentConstants;
 import org.wso2.carbon.oc.agent.internal.OCAgentUtils;
+import org.wso2.carbon.oc.agent.message.OCMessage;
 import org.wso2.carbon.oc.agent.publisher.OCDataPublisher;
 
 import javax.xml.ws.http.HTTPException;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -44,25 +49,23 @@ import java.util.Map;
  */
 public class RTPublisher implements OCDataPublisher {
 
-	private static final String REGISTRATION_PATH = "/api/register";
-	private static final String SYNCHRONIZATION_PATH = "/api/update";
+	private String serverId;
+	private static final String REGISTRATION_PATH = "/servers";
+	private static final String SYNCHRONIZATION_PATH = "/servers/";
 	private static final String CONTENT_TYPE = "application/json";
 	private static final String CHARACTER_SET = "UTF-8";
+
 	private static Logger logger = LoggerFactory.getLogger(RTPublisher.class);
 	private ObjectMapper objectMapper = new ObjectMapper();
-	/**
-	 * The http client used to connect Operations Center.
-	 */
 	private HttpClient httpClient;
-	/**
-	 * check oc registration message
-	 */
 	private boolean isRegistered = false;
 	private String ocUrl;
 	private long interval;
 
-	@Override public void init(Map<String, String> configMap) {
+	@Override public void init(OCAgentConfig.Publisher ocPublisher) {
 		// get set config
+		Map<String, String> configMap = ocPublisher.getProperties().getPropertyMap();
+
 		String username = configMap.get(RTConstants.USERNAME);
 		String password = configMap.get(RTConstants.PASSWORD);
 		this.ocUrl = configMap.get(RTConstants.REPORT_URL);
@@ -81,25 +84,26 @@ public class RTPublisher implements OCDataPublisher {
 	}
 
 	@Override
-	public void publish(Map<String, Object> dataMap) {
+	public void publish(OCMessage ocMessage) {
 		logger.info("======real-time===========reporting");
 
 		if (!isRegistered) {
-			register(dataMap);
+			register(ocMessage);
 		} else {
-			sync(dataMap);
+			sync(ocMessage);
 		}
 	}
 
 	/**
 	 * send the real time registration message
+	 * @param ocMessage - all oc data
 	 */
-	private void register(Map<String, Object> dataMap) {
+	private void register(OCMessage ocMessage) {
 
-		String jsonString = RTMessageUtil.getRegistrationRequestMessage(dataMap);
+		String jsonString = RTMessageUtil.getRegistrationRequestMessage(ocMessage);
 
-		String responseBody =
-				null;
+		//request check
+		String responseBody = null;
 		try {
 			responseBody =
 					sendPostRequest(ocUrl + REGISTRATION_PATH, jsonString, HttpStatus.SC_CREATED);
@@ -107,6 +111,8 @@ public class RTPublisher implements OCDataPublisher {
 			logger.error("RTPublisher connection down while registering: ", e);
 			isRegistered = false;
 		}
+
+		//response check
 		if (responseBody != null && responseBody.length() > 0) {
 			Map<String, String> regResMap;
 			try {
@@ -114,45 +120,45 @@ public class RTPublisher implements OCDataPublisher {
 				regResMap = objectMapper
 						.readValue(responseBody, new TypeReference<HashMap<String, String>>() {
 						});
+				if(regResMap != null){
+					serverId = regResMap.get(OCAgentConstants.SERVER_ID);
+				}
+
 
 				isRegistered = true;
 			} catch (IOException e) {
 				logger.error("Failed to read values from RegistrationResponse", e);
 				isRegistered = false;
 			}
-
-//			if (regResMap != null) {
-//				isRegistered = true;
-//
-//				logger.info("Registered in Operations Center successfully.");
-//			} else {
-//				logger.error("Unable receive JSON registration response.");
-//			}
 		}
 	}
 
 	/**
 	 * send the real time synchronization message
+	 * @param ocMessage - all oc data
 	 */
-	private void sync(Map<String, Object> dataMap) {
+	private void sync(OCMessage ocMessage) {
 
-		String jsonString = RTMessageUtil.getSynchronizationRequestMessage(dataMap);
+		String jsonString = RTMessageUtil.getSynchronizationRequestMessage(ocMessage);
+		String responseBody = null;
 
-		String responseBody =
-				null;
+		//request check
 		try {
 			responseBody =
-					sendPostRequest(ocUrl + SYNCHRONIZATION_PATH, jsonString, HttpStatus.SC_OK);
+					sendPutRequest(ocUrl + SYNCHRONIZATION_PATH + serverId, jsonString, HttpStatus.SC_CREATED);
 		} catch (IOException e) {
 			logger.error("RTPublisher connection down while sync messaging: ", e);
 			isRegistered = false;
 		}
+
+		//response check
 		if (responseBody != null && responseBody.length() > 0) {
-			Map<String, String> synResMap;
+			List<String> synResMap;
 			try {
 				synResMap = objectMapper
-						.readValue(responseBody, new TypeReference<HashMap<String, String>>() {
+						.readValue(responseBody, new TypeReference<List<String>>() {
 						});
+
 				isRegistered = true;
 			} catch (IOException e) {
 				logger.error("Failed to read values from SynchronizationResponse", e);
@@ -161,12 +167,9 @@ public class RTPublisher implements OCDataPublisher {
 			}
 
 			if (synResMap != null) {
-				if ("updated".equals(synResMap.get("status"))) {
-					String command = synResMap.get("command");
-					logger.info("Executing command. [Command:" + command + "]");
+				for(String command : synResMap) {
 					OCAgentUtils.performAction(command);
-				} else if ("error".equals(synResMap.get(""))) {
-					logger.error("Unable to synchronize properly.");
+					logger.info("Executing command. [Command:" + command + "]");
 				}
 
 			} else {
@@ -176,12 +179,12 @@ public class RTPublisher implements OCDataPublisher {
 	}
 
 	/**
-	 * Send basic post request
 	 *
-	 * @param url      - operations center url
-	 * @param request  - json string request message
-	 * @param expected - expected http status code
-	 * @return
+	 * @param url      String - operations center url
+	 * @param request  String - json string request message
+	 * @param expected int - expected http status code
+	 * @return String - response json string
+	 * @throws IOException - sever connect problem
 	 */
 	public String sendPostRequest(String url, String request, int expected) throws IOException {
 		PostMethod postMethod = new PostMethod(url);
@@ -191,7 +194,7 @@ public class RTPublisher implements OCDataPublisher {
 			if (logger.isTraceEnabled()) {
 				logger.trace("Sending POST request. " + request);
 			}
-			//try {
+
 				int statusCode = httpClient.executeMethod(postMethod);
 				if (statusCode == expected) {
 					String responseBody = postMethod.getResponseBodyAsString();
@@ -202,13 +205,47 @@ public class RTPublisher implements OCDataPublisher {
 				} else {
 					logger.error("Request failed with status Code : " + statusCode);
 				}
-			//} catch (IOException e) {
-				//logger.error("RTPublisher connection down: ", e);
-			//}
 		} catch (UnsupportedEncodingException e) {
 			logger.error("Failed to register with Operations Center", e);
 		} finally {
 			postMethod.releaseConnection();
+		}
+		return null;
+	}
+
+	/**
+	 *
+	 * @param url      String - operations center url
+	 * @param request  String - json string request message
+	 * @param expected int - expected http status code
+	 * @return String - response json string
+	 * @throws IOException - sever connect problem
+	 */
+	public String sendPutRequest(String url, String request, int expected) throws IOException {
+		PutMethod putMethod = new PutMethod(url);
+		try {
+			RequestEntity entity = new StringRequestEntity(request, CONTENT_TYPE, CHARACTER_SET);
+			putMethod.setRequestEntity(entity);
+			if (logger.isTraceEnabled()) {
+				logger.trace("Sending PUT request. " + request);
+			}
+
+			int statusCode = httpClient.executeMethod(putMethod);
+			if (statusCode == expected) {
+				String responseBody = putMethod.getResponseBodyAsString();
+				if (logger.isTraceEnabled()) {
+					logger.trace("Response received. " + responseBody);
+				}
+				return responseBody;
+			} else {
+				logger.error("Request failed with status Code : " + statusCode);
+				throw new IOException();
+			}
+
+		} catch (UnsupportedEncodingException e) {
+			logger.error("Failed to sync data with Operations Center", e);
+		} finally {
+			putMethod.releaseConnection();
 		}
 		return null;
 	}

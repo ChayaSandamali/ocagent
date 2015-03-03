@@ -20,6 +20,7 @@ import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wso2.carbon.oc.agent.internal.OCAgentConstants;
+import org.wso2.carbon.oc.agent.message.OCMessage;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -38,10 +39,10 @@ public class MBMessageUtil {
 	/**
 	 * This method builds static event payload message
 	 *
-	 * @param dataMap Map<String, Object> - all server data
+	 * @param ocMessage OCMessage - all server data
 	 * @return String - json string
 	 */
-	static String getRegistrationPayload(Map<String, Object> dataMap) {
+	static String getRegistrationPayload(OCMessage ocMessage) {
 
 		//root map
 		Map<String, Map<String, Map<String, Object>>> root =
@@ -51,27 +52,28 @@ public class MBMessageUtil {
 		//payload map
 		Map<String, Object> payload = new HashMap<String, Object>();
 
+
 		payload.put(OCAgentConstants.SYSTEM_LOCAL_IP,
-		            dataMap.get(OCAgentConstants.SYSTEM_LOCAL_IP));
-		payload.put(OCAgentConstants.SERVER_NAME, dataMap.get(OCAgentConstants.SERVER_NAME));
-		payload.put(OCAgentConstants.SERVER_VERSION, dataMap.get(OCAgentConstants.SERVER_VERSION));
-		payload.put(OCAgentConstants.SERVER_DOMAIN, dataMap.get(OCAgentConstants.SERVER_DOMAIN));
+		            ocMessage.getLocalIp());
+		payload.put(OCAgentConstants.SERVER_NAME, ocMessage.getServerName());
+		payload.put(OCAgentConstants.SERVER_VERSION, ocMessage.getServerVersion());
+		payload.put(OCAgentConstants.SERVER_DOMAIN, ocMessage.getDomain());
 		payload.put(OCAgentConstants.SERVER_SUBDOMAIN,
-		            dataMap.get(OCAgentConstants.SERVER_SUBDOMAIN));
+		            ocMessage.getSubDomain());
 		payload.put(OCAgentConstants.SERVER_ADMIN_SERVICE_URL,
-		            dataMap.get(OCAgentConstants.SERVER_ADMIN_SERVICE_URL));
+		            ocMessage.getAdminServiceUrl());
 		payload.put(OCAgentConstants.SERVER_START_TIME,
-		            dataMap.get(OCAgentConstants.SERVER_START_TIME));
-		payload.put(OCAgentConstants.SYSTEM_OS, dataMap.get(OCAgentConstants.SYSTEM_OS));
+		            ocMessage.getServerStartTime());
+		payload.put(OCAgentConstants.SYSTEM_OS, ocMessage.getOs());
 		payload.put(OCAgentConstants.SYSTEM_TOTAL_MEMORY,
-		            dataMap.get(OCAgentConstants.SYSTEM_TOTAL_MEMORY));
+		            ocMessage.getTotalMemory());
 		payload.put(OCAgentConstants.SYSTEM_CPU_COUNT,
-		            dataMap.get(OCAgentConstants.SYSTEM_CPU_COUNT));
+		            ocMessage.getCpuCount());
 		payload.put(OCAgentConstants.SYSTEM_CPU_SPEED,
-		            dataMap.get(OCAgentConstants.SYSTEM_CPU_SPEED));
+		            ocMessage.getCpuSpeed());
 		payload.put(OCAgentConstants.SERVER_TIMESTAMP,
-		            dataMap.get(OCAgentConstants.SERVER_TIMESTAMP));
-		payload.put(OCAgentConstants.SERVER_PATCHES, dataMap.get(OCAgentConstants.SERVER_PATCHES));
+		            ocMessage.getTimestamp());
+		payload.put(OCAgentConstants.SERVER_PATCHES, ocMessage.getPatches());
 
 		event.put("payload", payload);
 		root.put("event", event);
@@ -90,10 +92,10 @@ public class MBMessageUtil {
 	/**
 	 * This method builds dynamic event payload message
 	 *
-	 * @param dataMap Map<String, Object> - all server data
+	 * @param ocMessage OCMessage - all server data
 	 * @return String - json string
 	 */
-	static String getSynchronizationPayload(Map<String, Object> dataMap) {
+	static String getSynchronizationPayload(OCMessage ocMessage) {
 
 		//root map
 		Map<String, Map<String, Map<String, Object>>> root =
@@ -103,24 +105,24 @@ public class MBMessageUtil {
 		//payload map
 		Map<String, Object> payload = new HashMap<String, Object>();
 
-		payload.put(OCAgentConstants.SERVER_TENANTS, dataMap.get(OCAgentConstants.SERVER_TENANTS));
+		payload.put(OCAgentConstants.SERVER_TENANTS, ocMessage.getTenants());
 		payload.put(OCAgentConstants.SERVER_TIMESTAMP,
-		            dataMap.get(OCAgentConstants.SERVER_TIMESTAMP));
+		            ocMessage.getTimestamp());
 		payload.put(OCAgentConstants.SYSTEM_LOAD_AVERAGE,
-		            dataMap.get(OCAgentConstants.SYSTEM_LOAD_AVERAGE));
+		            ocMessage.getSystemLoadAverage());
 		payload.put(OCAgentConstants.SERVER_THREAD_COUNT,
-		            dataMap.get(OCAgentConstants.SERVER_THREAD_COUNT));
-		payload.put(OCAgentConstants.SERVER_UPTIME, dataMap.get(OCAgentConstants.SERVER_UPTIME));
+		            ocMessage.getThreadCount());
+		payload.put(OCAgentConstants.SERVER_UPTIME, ocMessage.getServerUpTime());
 		payload.put(OCAgentConstants.SERVER_ADMIN_SERVICE_URL,
-		            dataMap.get(OCAgentConstants.SERVER_ADMIN_SERVICE_URL));
+		            ocMessage.getAdminServiceUrl());
 		payload.put(OCAgentConstants.SYSTEM_USER_CPU_USAGE,
-		            dataMap.get(OCAgentConstants.SYSTEM_USER_CPU_USAGE));
+		            ocMessage.getUserCpuUsage());
 		payload.put(OCAgentConstants.SYSTEM_SYSTEM_CPU_USAGE,
-		            dataMap.get(OCAgentConstants.SYSTEM_SYSTEM_CPU_USAGE));
+		            ocMessage.getSystemCpuUsage());
 		payload.put(OCAgentConstants.SYSTEM_IDLE_CPU_USAGE,
-		            dataMap.get(OCAgentConstants.SYSTEM_IDLE_CPU_USAGE));
+		            ocMessage.getIdleCpuUsage());
 		payload.put(OCAgentConstants.SYSTEM_FREE_MEMORY,
-		            dataMap.get(OCAgentConstants.SYSTEM_FREE_MEMORY));
+		            ocMessage.getFreeMemory());
 
 		event.put("payload", payload);
 		root.put("event", event);

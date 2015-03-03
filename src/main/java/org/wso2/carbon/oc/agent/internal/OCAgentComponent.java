@@ -26,7 +26,6 @@ import org.wso2.carbon.user.core.service.RealmService;
 import org.wso2.carbon.utils.ConfigurationContextService;
 
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -62,33 +61,30 @@ public class OCAgentComponent {
 
 	protected void activate(ComponentContext componentContext) {
 		try {
-			logger.info("++++++++++++++++++++++++++++++++++++++++++++++==");
 			logger.info("Activating Operations Center Agent component.");
 
-			// get active publishers config list
-			List<Map<String, String>> activeOcPublishersList = OCAgentUtils.getActiveOcPublishersList();
+			List<OCAgentConfig.Publisher> activeOcPublishersList =
+					OCAgentConfig.getPublishers().getPublishersList();
 
 			//active publisher config map
-			for (Map<String, String> activeOcPublisherMap : activeOcPublishersList) {
+			for (OCAgentConfig.Publisher activeOcPublisher : activeOcPublishersList) {
 				OCDataPublisher ocDataPublisher = null;
 
-				Class publisherClass = Class.forName(activeOcPublisherMap.get(OCAgentConstants.CLASS));
+				Class publisherClass = Class.forName(activeOcPublisher.getClassPath());
 
 				ocDataPublisher = (OCDataPublisher) publisherClass.newInstance();
 
-				//TODO Config
-				ocDataPublisher.init(OCAgentUtils.getOcPublisherConfigMap(
-						activeOcPublisherMap.get(OCAgentConstants.NAME)));
+				ocDataPublisher.init(activeOcPublisher);
 
 				//Start reporting task as scheduled task
 
-					OCAgentReporterTask ocAgentReporterTask
-							= new OCAgentReporterTask(ocDataPublisher);
+				OCAgentReporterTask ocAgentReporterTask
+						= new OCAgentReporterTask(ocDataPublisher);
 
-					reporterTaskExecuter.scheduleAtFixedRate(ocAgentReporterTask,
-					                                         0,
-					                                         ocDataPublisher.getInterval(),
-					                                         TimeUnit.MILLISECONDS);
+				reporterTaskExecuter.scheduleAtFixedRate(ocAgentReporterTask,
+				                                         0,
+				                                         ocDataPublisher.getInterval(),
+				                                         TimeUnit.MILLISECONDS);
 			}
 
 		} catch (Throwable throwable) {

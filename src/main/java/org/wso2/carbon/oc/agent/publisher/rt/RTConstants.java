@@ -6,10 +6,10 @@ package org.wso2.carbon.oc.agent.publisher.rt;
 public class RTConstants {
 
 	//rt publisher specific xml attrs
-	public static final String REPORT_URL = "ReportURL";
-	public static final String USERNAME = "Username";
-	public static final String PASSWORD = "Password";
-	public static final String INTERVAL = "Interval";
+	public static final String REPORT_URL = "reportURL";
+	public static final String USERNAME = "username";
+	public static final String PASSWORD = "password";
+	public static final String INTERVAL = "interval";
 
 	private RTConstants() {}
 }

@@ -22,9 +22,7 @@ package org.wso2.carbon.oc.agent.internal;
 public class OCAgentConstants {
 
 	public static final String OC_XML = "operations-center.xml";
-	//general publisher related attributes
-	public static final String CLASS = "Class";
-	public static final String NAME = "Name";
+
 	//all system level keys of data map
 	public static final String SYSTEM_LOCAL_IP = "ip";
 	public static final String SYSTEM_OS = "os";
@@ -48,7 +46,7 @@ public class OCAgentConstants {
 	public static final String SERVER_TENANTS = "tenants";
 	public static final String SERVER_TIMESTAMP = "timestamp";
 	public static final String SERVER_PATCHES = "patches";
-	public static final String OC_PUBLISHER_ROOT_XPATH = "//OperationsCenter//Publishers//Publisher";
+	public static final String SERVER_ID = "serverId";
 
 	private OCAgentConstants() {
 	}

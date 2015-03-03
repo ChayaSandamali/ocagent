@@ -18,6 +18,8 @@ package org.wso2.carbon.oc.agent.publisher.mb;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.wso2.carbon.oc.agent.internal.OCAgentConfig;
+import org.wso2.carbon.oc.agent.message.OCMessage;
 import org.wso2.carbon.oc.agent.publisher.OCDataPublisher;
 
 import javax.jms.*;
@@ -54,8 +56,10 @@ public class MBPublisher implements OCDataPublisher {
 
 	private boolean isRegistered = false;
 
-	@Override public void init(Map<String, String> configMap) {
+	@Override public void init(OCAgentConfig.Publisher ocPublisher) {
 		//get set config
+		Map<String, String> configMap = ocPublisher.getProperties().getPropertyMap();
+
 		this.username = configMap.get(MBConstants.USERNAME);
 		this.password = configMap.get(MBConstants.PASSWORD);
 		this.defaultHostName =
@@ -104,13 +108,13 @@ public class MBPublisher implements OCDataPublisher {
 	}
 
 	@Override
-	public void publish(Map<String, Object> dataMap) {
+	public void publish(OCMessage ocMessage) {
 		logger.info("======wso2-mb===========reporting");
 		if (!isRegistered) {
-			sendMessages(REG_QUEUE, MBMessageUtil.getRegistrationPayload(dataMap));
+			sendMessages(REG_QUEUE, MBMessageUtil.getRegistrationPayload(ocMessage));
 			isRegistered = true;
 		} else {
-			sendMessages(SYNC_QUEUE, MBMessageUtil.getSynchronizationPayload(dataMap));
+			sendMessages(SYNC_QUEUE, MBMessageUtil.getSynchronizationPayload(ocMessage));
 		}
 
 	}

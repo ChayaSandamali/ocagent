@@ -60,7 +60,6 @@ public class OCAgentDataExtractor {
 	private static OCAgentDataExtractor instance =
 			new OCAgentDataExtractor();
 	private static Logger logger = LoggerFactory.getLogger(OCAgentDataExtractor.class);
-	private static Map<String, Object> allOcData;
 	private static OCMessage ocMessage;
 	private JavaSysMon javaSysMon = new JavaSysMon();
 	private String os;
@@ -291,43 +290,8 @@ public class OCAgentDataExtractor {
 		return patches;
 	}
 
-	public Map<String, Object> getAllOcData() {
-		if (allOcData == null) {
-			allOcData = new HashMap<String, Object>();
-		}
-
-		try {
-			allOcData.put(OCAgentConstants.SYSTEM_LOCAL_IP, this.getLocalIp());
-			allOcData.put(OCAgentConstants.SERVER_NAME, this.getServerName());
-			allOcData.put(OCAgentConstants.SERVER_VERSION, this.getServerVersion());
-			allOcData.put(OCAgentConstants.SERVER_DOMAIN, this.getDomain());
-			allOcData.put(OCAgentConstants.SERVER_SUBDOMAIN, this.getSubDomain());
-			allOcData.put(OCAgentConstants.SERVER_START_TIME, this.getServerStartTime());
-			allOcData.put(OCAgentConstants.SYSTEM_OS, this.getOs());
-			allOcData.put(OCAgentConstants.SYSTEM_TOTAL_MEMORY, this.getTotalMemory());
-			allOcData.put(OCAgentConstants.SYSTEM_CPU_COUNT, this.getCpuCount());
-			allOcData.put(OCAgentConstants.SYSTEM_CPU_SPEED, this.getCpuSpeed());
-			allOcData.put(OCAgentConstants.SERVER_ADMIN_SERVICE_URL, this.getAdminServiceUrl());
-			allOcData.put(OCAgentConstants.SERVER_UPTIME, this.getServerUpTime());
-			allOcData.put(OCAgentConstants.SERVER_THREAD_COUNT, this.getThreadCount());
-			allOcData.put(OCAgentConstants.SYSTEM_FREE_MEMORY, this.getFreeMemory());
-			allOcData.put(OCAgentConstants.SYSTEM_IDLE_CPU_USAGE, this.getIdleCpuUsage());
-			allOcData.put(OCAgentConstants.SYSTEM_SYSTEM_CPU_USAGE, this.getSystemCpuUsage());
-			allOcData.put(OCAgentConstants.SYSTEM_USER_CPU_USAGE, this.getUserCpuUsage());
-			allOcData.put(OCAgentConstants.SYSTEM_LOAD_AVERAGE, this.getSystemLoadAverage());
-			allOcData.put(OCAgentConstants.SERVER_TENANTS, this.getTenants());
-			allOcData.put(OCAgentConstants.SERVER_PATCHES, this.getPatches());
-			allOcData.put(OCAgentConstants.SERVER_TIMESTAMP, System.currentTimeMillis());
-
-		} catch (ParameterUnavailableException e) {
-			logger.error("Failed to read oc data parameters. ", e);
-		}
-
-		return allOcData;
-	}
-
 	public OCMessage getOcMessage() {
-		if(ocMessage == null) {
+		if (ocMessage == null) {
 			ocMessage = new OCMessage();
 		}
 
@@ -351,8 +315,12 @@ public class OCAgentDataExtractor {
 			ocMessage.setSystemLoadAverage(this.getSystemLoadAverage());
 			ocMessage.setTenants(this.getTenants());
 			ocMessage.setPatches(this.getPatches());
-			ocMessage.setCurrentTimeMills(System.currentTimeMillis());
 
+			ocMessage.setServerUpTime(this.getServerUpTime());
+
+			String timestamp =
+					new java.text.SimpleDateFormat("MM/dd/yyyy h:mm:ss a").format(new Date());
+			ocMessage.setTimestamp(timestamp);
 
 		} catch (ParameterUnavailableException e) {
 			logger.error("Failed to read oc data parameters. ", e);

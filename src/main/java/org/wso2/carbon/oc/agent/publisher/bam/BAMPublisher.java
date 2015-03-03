@@ -21,6 +21,8 @@ import org.slf4j.LoggerFactory;
 import org.wso2.carbon.databridge.agent.thrift.DataPublisher;
 import org.wso2.carbon.databridge.agent.thrift.exception.AgentException;
 import org.wso2.carbon.databridge.commons.exception.*;
+import org.wso2.carbon.oc.agent.internal.OCAgentConfig;
+import org.wso2.carbon.oc.agent.message.OCMessage;
 import org.wso2.carbon.oc.agent.publisher.OCDataPublisher;
 import org.wso2.carbon.utils.CarbonUtils;
 
@@ -42,8 +44,10 @@ public class BAMPublisher implements OCDataPublisher {
 	private long interval;
 	private boolean isRegistered = false;
 
-	@Override public void init(Map<String, String> configMap) {
+	@Override public void init(OCAgentConfig.Publisher ocPublisher) {
 		//load xml config
+		Map<String, String> configMap = ocPublisher.getProperties().getPropertyMap();
+
 		this.username = configMap.get(BAMConstants.USERNAME);
 		this.password = configMap.get(BAMConstants.PASSWORD);
 		this.defaultHostName = configMap.get(BAMConstants.REPORT_HOST_NAME);
@@ -102,25 +106,25 @@ public class BAMPublisher implements OCDataPublisher {
 	}
 
 	@Override
-	public void publish(Map<String, Object> dataMap) {
+	public void publish(OCMessage ocMessage) {
 
-		logger.info("==========wso2-bam==========reporting");
+		/*logger.info("==========wso2-bam==========reporting");
 		try {
 
 			if (!isRegistered) {
-				dataPublisher.publish(getStreamId(BAMMessageUtil.getRegisterStreamDef(dataMap)), null, null,
+				dataPublisher.publish(getStreamId(BAMMessageUtil.getRegisterStreamDef(ocMessage)), null, null,
 				                      BAMMessageUtil
-						                      .getBAMRegistrationRequestMessage(dataMap));
+						                      .getBAMRegistrationRequestMessage(ocMessage));
 				isRegistered = true;
 			} else {
-				dataPublisher.publish(getStreamId(BAMMessageUtil.getSynchronizeStreamDef(dataMap)), null, null,
+				dataPublisher.publish(getStreamId(BAMMessageUtil.getSynchronizeStreamDef(ocMessage)), null, null,
 				                      BAMMessageUtil
-						                      .getBAMSynchronizationRequestMessage(dataMap));
+						                      .getBAMSynchronizationRequestMessage(ocMessage));
 			}
 
 		} catch (AgentException e) {
 			logger.info("BAMPublisher connection down", e);
-		}
+		}*/
 
 		//		logger.info(getSynchronizeStreamDef(dataExtractor));
 		//		logger.info(getRegisterStreamDef(dataExtractor));

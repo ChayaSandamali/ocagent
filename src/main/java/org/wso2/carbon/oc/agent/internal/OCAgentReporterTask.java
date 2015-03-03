@@ -29,12 +29,12 @@ public class OCAgentReporterTask implements Runnable {
 
 	private OCDataPublisher ocDataPublisher;
 
-	public OCAgentReporterTask(OCDataPublisher operationsCenterConnector) {
-		this.ocDataPublisher = operationsCenterConnector;
+	public OCAgentReporterTask(OCDataPublisher ocDataPublisher) {
+		this.ocDataPublisher = ocDataPublisher;
 	}
 
 	@Override
 	public void run() {
-		ocDataPublisher.publish(OCAgentDataExtractor.getInstance().getAllOcData());
+		ocDataPublisher.publish(OCAgentDataExtractor.getInstance().getOcMessage());
 	}
 }
