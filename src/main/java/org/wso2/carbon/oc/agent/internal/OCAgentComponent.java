@@ -20,6 +20,7 @@ import org.osgi.service.component.ComponentContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wso2.carbon.base.api.ServerConfigurationService;
+import org.wso2.carbon.oc.agent.model.OCPublisherConfiguration;
 import org.wso2.carbon.oc.agent.publisher.OCDataPublisher;
 import org.wso2.carbon.server.admin.common.IServerAdmin;
 import org.wso2.carbon.user.core.service.RealmService;
@@ -55,7 +56,7 @@ import java.util.concurrent.TimeUnit;
  */
 
 public class OCAgentComponent {
-	private static final ScheduledExecutorService reporterTaskExecuter =
+	private static final ScheduledExecutorService reporterTaskExecutor =
 			Executors.newScheduledThreadPool(1);
 	private static Logger logger = LoggerFactory.getLogger(OCAgentComponent.class);
 
@@ -63,25 +64,25 @@ public class OCAgentComponent {
 		try {
 			logger.info("Activating Operations Center Agent component.");
 
-			List<OCAgentConfig.Publisher> activeOcPublishersList =
-					OCAgentConfig.getPublishers().getPublishersList();
+			List<OCPublisherConfiguration> ocPublisherConfigurationList =
+					OCAgentUtils.getOcPublishers().getPublishersList();
 
 			//active publisher config map
-			for (OCAgentConfig.Publisher activeOcPublisher : activeOcPublishersList) {
+			for (OCPublisherConfiguration ocPublisherConfiguration : ocPublisherConfigurationList) {
 				OCDataPublisher ocDataPublisher = null;
 
-				Class publisherClass = Class.forName(activeOcPublisher.getClassPath());
+				Class publisherClass = Class.forName(ocPublisherConfiguration.getClassPath());
 
 				ocDataPublisher = (OCDataPublisher) publisherClass.newInstance();
 
-				ocDataPublisher.init(activeOcPublisher);
+				ocDataPublisher.init(ocPublisherConfiguration);
 
 				//Start reporting task as scheduled task
 
 				OCAgentReporterTask ocAgentReporterTask
 						= new OCAgentReporterTask(ocDataPublisher);
 
-				reporterTaskExecuter.scheduleAtFixedRate(ocAgentReporterTask,
+				reporterTaskExecutor.scheduleAtFixedRate(ocAgentReporterTask,
 				                                         0,
 				                                         ocDataPublisher.getInterval(),
 				                                         TimeUnit.MILLISECONDS);
@@ -89,13 +90,13 @@ public class OCAgentComponent {
 
 		} catch (Throwable throwable) {
 			logger.error("Failed to activate OperationsCenterAgentComponent", throwable);
-			reporterTaskExecuter.shutdown();
+			reporterTaskExecutor.shutdown();
 		}
 	}
 
 	protected void deactivate(ComponentContext componentContext) {
 		logger.info("Deactivating Operations Center Agent component.");
-		reporterTaskExecuter.shutdown();
+		reporterTaskExecutor.shutdown();
 	}
 
 	protected void unsetConfigurationContextService(

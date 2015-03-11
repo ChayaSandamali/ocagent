@@ -46,6 +46,8 @@ public class RTMessageUtil {
 
 		Map<String, Object> syncDataMap = new HashMap<String, Object>();
 
+		syncDataMap.put(OCAgentConstants.SERVER_DOMAIN,
+		                ocMessage.getDomain());
 		syncDataMap.put(OCAgentConstants.SERVER_TENANTS,
 		                ocMessage.getTenants());
 		syncDataMap.put(OCAgentConstants.SERVER_TIMESTAMP,

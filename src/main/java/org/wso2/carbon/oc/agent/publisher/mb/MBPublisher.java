@@ -18,7 +18,7 @@ package org.wso2.carbon.oc.agent.publisher.mb;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.wso2.carbon.oc.agent.internal.OCAgentConfig;
+import org.wso2.carbon.oc.agent.model.OCPublisherConfiguration;
 import org.wso2.carbon.oc.agent.message.OCMessage;
 import org.wso2.carbon.oc.agent.publisher.OCDataPublisher;
 
@@ -56,9 +56,9 @@ public class MBPublisher implements OCDataPublisher {
 
 	private boolean isRegistered = false;
 
-	@Override public void init(OCAgentConfig.Publisher ocPublisher) {
+	@Override public void init(OCPublisherConfiguration ocPublisherConfiguration) {
 		//get set config
-		Map<String, String> configMap = ocPublisher.getProperties().getPropertyMap();
+		Map<String, String> configMap = ocPublisherConfiguration.getOcPublisherProperties().getPropertyMap();
 
 		this.username = configMap.get(MBConstants.USERNAME);
 		this.password = configMap.get(MBConstants.PASSWORD);

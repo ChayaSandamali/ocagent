@@ -18,8 +18,17 @@ package org.wso2.carbon.oc.agent.internal;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.w3c.dom.Document;
+import org.wso2.carbon.oc.agent.model.OCConfiguration;
+import org.wso2.carbon.oc.agent.model.OCPublishers;
 import org.wso2.carbon.server.admin.service.ServerAdmin;
+import org.wso2.carbon.utils.CarbonUtils;
+
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Unmarshaller;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 
 /*
     Allows to invoke commands in server restart, shutdown
@@ -33,6 +42,29 @@ public class OCAgentUtils {
 	private static Logger logger = LoggerFactory.getLogger(OCAgentUtils.class);
 
 	private OCAgentUtils() {
+	}
+
+	/**
+	 * Extract all enabled publisher info
+	 * @return Publishers - get all publisher objects
+	 */
+	public static OCPublishers getOcPublishers() {
+		OCPublishers publishers = null;
+		try {
+			JAXBContext context = JAXBContext.newInstance(OCConfiguration.class);
+			Unmarshaller um = context.createUnmarshaller();
+			//TODO
+			OCConfiguration oc = (OCConfiguration) um.unmarshal(new FileReader(
+					CarbonUtils.getCarbonConfigDirPath() + File.separator +
+					OCAgentConstants.OC_XML));
+			publishers = oc.getOcPublishers();
+		} catch (JAXBException e) {
+			logger.info(e.getMessage(), e);
+		} catch (FileNotFoundException e) {
+			logger.info(OCAgentConstants.OC_XML + " is missing in this path", e);
+		}
+
+		return publishers;
 	}
 
 	/**

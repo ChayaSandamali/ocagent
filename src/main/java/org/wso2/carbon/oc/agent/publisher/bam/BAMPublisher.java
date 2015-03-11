@@ -21,7 +21,7 @@ import org.slf4j.LoggerFactory;
 import org.wso2.carbon.databridge.agent.thrift.DataPublisher;
 import org.wso2.carbon.databridge.agent.thrift.exception.AgentException;
 import org.wso2.carbon.databridge.commons.exception.*;
-import org.wso2.carbon.oc.agent.internal.OCAgentConfig;
+import org.wso2.carbon.oc.agent.model.OCPublisherConfiguration;
 import org.wso2.carbon.oc.agent.message.OCMessage;
 import org.wso2.carbon.oc.agent.publisher.OCDataPublisher;
 import org.wso2.carbon.utils.CarbonUtils;
@@ -44,9 +44,9 @@ public class BAMPublisher implements OCDataPublisher {
 	private long interval;
 	private boolean isRegistered = false;
 
-	@Override public void init(OCAgentConfig.Publisher ocPublisher) {
+	@Override public void init(OCPublisherConfiguration ocPublisherConfiguration) {
 		//load xml config
-		Map<String, String> configMap = ocPublisher.getProperties().getPropertyMap();
+		Map<String, String> configMap = ocPublisherConfiguration.getOcPublisherProperties().getPropertyMap();
 
 		this.username = configMap.get(BAMConstants.USERNAME);
 		this.password = configMap.get(BAMConstants.PASSWORD);

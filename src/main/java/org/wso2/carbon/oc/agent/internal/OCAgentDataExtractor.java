@@ -264,15 +264,30 @@ public class OCAgentDataExtractor {
 		return operatingSystemMXBean.getSystemLoadAverage();
 	}
 
-	public Tenant[] getTenants() {
+	public List<org.wso2.carbon.oc.agent.beans.Tenant> getTenants() {
 		Tenant[] tenants = null;
+		List<org.wso2.carbon.oc.agent.beans.Tenant> tenantBeanList = new ArrayList<org.wso2.carbon.oc.agent.beans.Tenant>();
 		try {
 			tenants = OCAgentDataHolder.getInstance().getRealmService().getTenantManager()
 			                           .getAllTenants();
+			for(Tenant t : tenants) {
+				org.wso2.carbon.oc.agent.beans.Tenant tenantBean = new org.wso2.carbon.oc.agent.beans.Tenant();
+				tenantBean.setId(t.getId());
+				tenantBean.setAdminFirstName(t.getAdminFirstName());
+				tenantBean.setAdminLastName(t.getAdminLastName());
+				tenantBean.setAdminFullName(t.getAdminFullName());
+				tenantBean.setAdminName(t.getAdminName());
+				tenantBean.setCreatedDate(t.getCreatedDate());
+				tenantBean.setDomain(t.getDomain());
+				tenantBean.setActive(t.isActive());
+				tenantBean.setEmail(t.getEmail());
+
+				tenantBeanList.add(tenantBean);
+			}
 		} catch (UserStoreException e) {
 			logger.info("Failed to retrieve all tenants", e);
 		}
-		return tenants;
+		return tenantBeanList;
 	}
 
 	public List<String> getPatches() {

@@ -30,13 +30,12 @@ import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.type.TypeReference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.wso2.carbon.oc.agent.internal.OCAgentConfig;
 import org.wso2.carbon.oc.agent.internal.OCAgentConstants;
 import org.wso2.carbon.oc.agent.internal.OCAgentUtils;
+import org.wso2.carbon.oc.agent.model.OCPublisherConfiguration;
 import org.wso2.carbon.oc.agent.message.OCMessage;
 import org.wso2.carbon.oc.agent.publisher.OCDataPublisher;
 
-import javax.xml.ws.http.HTTPException;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
@@ -62,9 +61,9 @@ public class RTPublisher implements OCDataPublisher {
 	private String ocUrl;
 	private long interval;
 
-	@Override public void init(OCAgentConfig.Publisher ocPublisher) {
+	@Override public void init(OCPublisherConfiguration ocPublisherConfiguration) {
 		// get set config
-		Map<String, String> configMap = ocPublisher.getProperties().getPropertyMap();
+		Map<String, String> configMap = ocPublisherConfiguration.getOcPublisherProperties().getPropertyMap();
 
 		String username = configMap.get(RTConstants.USERNAME);
 		String password = configMap.get(RTConstants.PASSWORD);
@@ -145,7 +144,7 @@ public class RTPublisher implements OCDataPublisher {
 		//request check
 		try {
 			responseBody =
-					sendPutRequest(ocUrl + SYNCHRONIZATION_PATH + serverId, jsonString, HttpStatus.SC_CREATED);
+					sendPutRequest(ocUrl + SYNCHRONIZATION_PATH + serverId, jsonString, HttpStatus.SC_OK);
 		} catch (IOException e) {
 			logger.error("RTPublisher connection down while sync messaging: ", e);
 			isRegistered = false;

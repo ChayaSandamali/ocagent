@@ -16,9 +16,11 @@
 
 package org.wso2.carbon.oc.agent.message;
 
-import org.wso2.carbon.user.api.Tenant;
+
+import org.wso2.carbon.oc.agent.beans.Tenant;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * This class allows to store all oc server info
@@ -43,9 +45,11 @@ public class OCMessage {
 	private double systemCpuUsage;
 	private double userCpuUsage;
 	private double systemLoadAverage;
-	private Tenant tenants[];
+	private List<Tenant> tenants;
 	private List<String> patches;
 	private String timestamp;
+
+	private Map<String, String> dataMap;
 
 	public String getLocalIp() {
 		return localIp;
@@ -183,11 +187,11 @@ public class OCMessage {
 		this.systemLoadAverage = systemLoadAverage;
 	}
 
-	public Tenant[] getTenants() {
+	public List<Tenant> getTenants() {
 		return tenants;
 	}
 
-	public void setTenants(Tenant[] tenants) {
+	public void setTenants(List<Tenant> tenants) {
 		this.tenants = tenants;
 	}
 
