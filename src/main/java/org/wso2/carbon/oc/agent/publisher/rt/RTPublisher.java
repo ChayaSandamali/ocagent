@@ -31,6 +31,7 @@ import org.codehaus.jackson.type.TypeReference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wso2.carbon.oc.agent.internal.OCAgentConstants;
+import org.wso2.carbon.oc.agent.internal.OCAgentDataExtractor;
 import org.wso2.carbon.oc.agent.internal.OCAgentUtils;
 import org.wso2.carbon.oc.agent.model.OCPublisherConfiguration;
 import org.wso2.carbon.oc.agent.message.OCMessage;
@@ -80,11 +81,13 @@ public class RTPublisher implements OCDataPublisher {
 		                                                                          password));
 		this.httpClient.getParams().setAuthenticationPreemptive(true);
 		logger.info("RTPublisher init done");
+
+
 	}
 
 	@Override
 	public void publish(OCMessage ocMessage) {
-		logger.info("======real-time===========reporting");
+		logger.debug("======real-time===========reporting");
 
 		if (!isRegistered) {
 			register(ocMessage);
@@ -168,7 +171,7 @@ public class RTPublisher implements OCDataPublisher {
 			if (synResMap != null) {
 				for(String command : synResMap) {
 					OCAgentUtils.performAction(command);
-					logger.info("Executing command. [Command:" + command + "]");
+					logger.debug("Executing command. [Command:" + command + "]");
 				}
 
 			} else {

@@ -77,8 +77,6 @@ public class OCAgentComponent {
 
 				ocDataPublisher.init(ocPublisherConfiguration);
 
-				//Start reporting task as scheduled task
-
 				OCAgentReporterTask ocAgentReporterTask
 						= new OCAgentReporterTask(ocDataPublisher);
 
@@ -92,6 +90,8 @@ public class OCAgentComponent {
 			logger.error("Failed to activate OperationsCenterAgentComponent", throwable);
 			reporterTaskExecutor.shutdown();
 		}
+
+
 	}
 
 	protected void deactivate(ComponentContext componentContext) {

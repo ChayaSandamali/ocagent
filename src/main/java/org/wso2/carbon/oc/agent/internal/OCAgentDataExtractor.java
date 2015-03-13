@@ -69,9 +69,14 @@ public class OCAgentDataExtractor {
 
 	private OCAgentDataExtractor() {
 		os = javaSysMon.osName();
-		cpuCount = javaSysMon.numCpus();
-		cpuSpeed = javaSysMon.cpuFrequencyInHz() / GIGA;
-		totalMemory = javaSysMon.physical().getTotalBytes() / MEGA;
+		cpuCount = 0;
+		cpuSpeed = 0;
+		totalMemory = 0;
+//		cpuCount = javaSysMon.numCpus();
+
+//		cpuSpeed = javaSysMon.cpuFrequencyInHz() / GIGA;
+
+//		totalMemory = javaSysMon.physical().getTotalBytes() / MEGA;
 	}
 
 	public static OCAgentDataExtractor getInstance() {
@@ -285,7 +290,7 @@ public class OCAgentDataExtractor {
 				tenantBeanList.add(tenantBean);
 			}
 		} catch (UserStoreException e) {
-			logger.info("Failed to retrieve all tenants", e);
+			logger.error("Failed to retrieve all tenants", e);
 		}
 		return tenantBeanList;
 	}

@@ -48,6 +48,7 @@ public class OCAgentUtils {
 	 * Extract all enabled publisher info
 	 * @return Publishers - get all publisher objects
 	 */
+	//handle NPE
 	public static OCPublishers getOcPublishers() {
 		OCPublishers publishers = null;
 		try {
@@ -59,9 +60,9 @@ public class OCAgentUtils {
 					OCAgentConstants.OC_XML));
 			publishers = oc.getOcPublishers();
 		} catch (JAXBException e) {
-			logger.info(e.getMessage(), e);
+			logger.error(e.getMessage(), e);
 		} catch (FileNotFoundException e) {
-			logger.info(OCAgentConstants.OC_XML + " is missing in this path", e);
+			logger.error(OCAgentConstants.OC_XML + " is missing in this path", e);
 		}
 
 		return publishers;
