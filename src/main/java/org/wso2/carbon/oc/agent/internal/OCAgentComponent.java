@@ -14,20 +14,19 @@
  * limitations under the License.
  */
 
-package org.wso2.carbon.oc.internal;
+package org.wso2.carbon.oc.agent.internal;
 
 import org.osgi.service.component.ComponentContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wso2.carbon.base.api.ServerConfigurationService;
-import org.wso2.carbon.oc.publisher.OCDataPublisher;
+import org.wso2.carbon.oc.agent.model.OCPublisherConfiguration;
+import org.wso2.carbon.oc.agent.publisher.OCDataPublisher;
 import org.wso2.carbon.server.admin.common.IServerAdmin;
 import org.wso2.carbon.user.core.service.RealmService;
 import org.wso2.carbon.utils.ConfigurationContextService;
 
-import java.lang.reflect.Constructor;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -57,51 +56,47 @@ import java.util.concurrent.TimeUnit;
  */
 
 public class OCAgentComponent {
-	private static Logger logger = LoggerFactory.getLogger(OCAgentComponent.class);
-	private static final ScheduledExecutorService reporterTaskExecuter =
+	private static final ScheduledExecutorService reporterTaskExecutor =
 			Executors.newScheduledThreadPool(1);
+	private static Logger logger = LoggerFactory.getLogger(OCAgentComponent.class);
 
 	protected void activate(ComponentContext componentContext) {
 		try {
 			logger.info("Activating Operations Center Agent component.");
 
-			// get active publishers class paths
-			//change publisherList
-			List<String> publisherList = OCAgentUtils.getActivePublishers();
+			List<OCPublisherConfiguration> ocPublisherConfigurationList =
+					OCAgentUtils.getOcPublishers().getPublishersList();
 
-				for (String activePublisher : publisherList) {
-					OCDataPublisher publisher = null;
-					Class publisherClass = Class.forName(activePublisher);
+			//active publisher config map
+			for (OCPublisherConfiguration ocPublisherConfiguration : ocPublisherConfigurationList) {
+				OCDataPublisher ocDataPublisher = null;
 
-					Object[] publisherArguments = new Object[] {OCAgentUtils.getPublisher(activePublisher)};
+				Class publisherClass = Class.forName(ocPublisherConfiguration.getClassPath());
 
-					Constructor publisherConstructor = publisherClass.getConstructor(Map.class);
+				ocDataPublisher = (OCDataPublisher) publisherClass.newInstance();
 
-					publisher = (OCDataPublisher) publisherConstructor.newInstance(publisherArguments);
-					//init and parse config
+				ocDataPublisher.init(ocPublisherConfiguration);
 
-					//Start reporting task as scheduled task
-					if (publisher != null) {
+				OCAgentReporterTask ocAgentReporterTask
+						= new OCAgentReporterTask(ocDataPublisher);
 
-						OCAgentReporterTask ocAgentReporterTask
-								= new OCAgentReporterTask(publisher);
-						//directly from config
-						reporterTaskExecuter.scheduleAtFixedRate(ocAgentReporterTask,
-						                                         0,
-						                                         publisher.getInterval(),
-						                                         TimeUnit.MILLISECONDS);
-					}
-				}
+				reporterTaskExecutor.scheduleAtFixedRate(ocAgentReporterTask,
+				                                         0,
+				                                         ocDataPublisher.getInterval(),
+				                                         TimeUnit.MILLISECONDS);
+			}
 
 		} catch (Throwable throwable) {
 			logger.error("Failed to activate OperationsCenterAgentComponent", throwable);
-			reporterTaskExecuter.shutdown();
+			reporterTaskExecutor.shutdown();
 		}
+
+
 	}
 
 	protected void deactivate(ComponentContext componentContext) {
 		logger.info("Deactivating Operations Center Agent component.");
-		reporterTaskExecuter.shutdown();
+		reporterTaskExecutor.shutdown();
 	}
 
 	protected void unsetConfigurationContextService(
@@ -112,7 +107,7 @@ public class OCAgentComponent {
 	protected void setConfigurationContextService(
 			ConfigurationContextService configurationContextService) {
 		OCAgentDataHolder.getInstance()
-		                               .setConfigurationContextService(configurationContextService);
+		                 .setConfigurationContextService(configurationContextService);
 	}
 
 	protected void unsetServerConfigurationService(
@@ -123,7 +118,7 @@ public class OCAgentComponent {
 	protected void setServerConfigurationService(
 			ServerConfigurationService serverConfigurationService) {
 		OCAgentDataHolder.getInstance()
-		                               .setServerConfigurationService(serverConfigurationService);
+		                 .setServerConfigurationService(serverConfigurationService);
 	}
 
 	protected void unsetServerAdminService(IServerAdmin serverAdmin) {

@@ -14,19 +14,13 @@
  * limitations under the License.
  */
 
-package org.wso2.carbon.oc.internal.messages;
+package org.wso2.carbon.oc.agent.internal.exceptions;
 
 /**
- * Created by jayanga on 11/10/14.
+ * Exception for handle extracting data
  */
-public class RegistrationResponse {
-	private String serverId;
-
-	public String getServerId() {
-		return serverId;
-	}
-
-	public void setServerId(String serverId) {
-		this.serverId = serverId;
+public class ParameterUnavailableException extends Exception {
+	public ParameterUnavailableException(String message) {
+		super(message);
 	}
 }

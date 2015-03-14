@@ -14,27 +14,27 @@
  * limitations under the License.
  */
 
-package org.wso2.carbon.oc.publisher;
+package org.wso2.carbon.oc.agent.internal;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.wso2.carbon.oc.agent.publisher.OCDataPublisher;
 
 /**
- *
+ * This class allows to report / publish data periodically
  */
-public interface OCDataPublisher {
 
-	void init();
+public class OCAgentReporterTask implements Runnable {
+	private static Logger logger = LoggerFactory.getLogger(OCAgentReporterTask.class);
 
-	/**
-	 * publish data to endpoint/resource
-	 */
-	//parse
-    void publish();
+	private OCDataPublisher ocDataPublisher;
 
+	public OCAgentReporterTask(OCDataPublisher ocDataPublisher) {
+		this.ocDataPublisher = ocDataPublisher;
+	}
 
-
-	/**
-	 *
-	 * @return interval time mili-seconds - periodical data publishing time
-	 */
-	//
-    long getInterval();
+	@Override
+	public void run() {
+		ocDataPublisher.publish(OCAgentDataExtractor.getInstance().getOcMessage());
+	}
 }

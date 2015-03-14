@@ -14,19 +14,20 @@
  * limitations under the License.
  */
 
-package org.wso2.carbon.oc.internal;
+package org.wso2.carbon.oc.agent.internal;
 
 import com.jezhumble.javasysmon.JavaSysMon;
 import org.apache.axiom.om.OMElement;
-import org.wso2.carbon.user.api.Tenant;
 import org.apache.axis2.clustering.ClusteringAgent;
 import org.apache.axis2.description.Parameter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wso2.carbon.base.api.ServerConfigurationService;
-import org.wso2.carbon.oc.internal.exceptions.ParameterUnavailableException;
+import org.wso2.carbon.oc.agent.internal.exceptions.ParameterUnavailableException;
+import org.wso2.carbon.oc.agent.message.OCMessage;
 import org.wso2.carbon.server.admin.common.ServerUpTime;
 import org.wso2.carbon.server.admin.service.ServerAdmin;
+import org.wso2.carbon.user.api.Tenant;
 import org.wso2.carbon.user.api.UserStoreException;
 import org.wso2.carbon.utils.CarbonUtils;
 import org.wso2.carbon.utils.ConfigurationContextService;
@@ -34,24 +35,16 @@ import org.wso2.carbon.utils.ConfigurationContextService;
 import java.io.File;
 import java.lang.management.ManagementFactory;
 import java.lang.management.OperatingSystemMXBean;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 /**
  * This class extract server data from server admin service
  */
 
 public class OCAgentDataExtractor {
-	private static OCAgentDataExtractor instance =
-			new OCAgentDataExtractor();
-	private static Logger logger = LoggerFactory.getLogger(OCAgentDataExtractor.class);
-
 	private static final double PERCENT = 100;
 	private static final double MEGA = 1000000;
 	private static final double GIGA = 1000000000;
-
 	private static final String LOCAL_IP = "carbon.local.ip";
 	private static final String MGT_TRANSPORT_HTTPS_PORT = "mgt.transport.https.port";
 	private static final String NAME = "Name";
@@ -64,7 +57,10 @@ public class OCAgentDataExtractor {
 	private static final String PATCH_PATH =
 			CarbonUtils.getCarbonHome() + "/repository/components/patches";
 	private static final String PATCH = "patch";
-
+	private static OCAgentDataExtractor instance =
+			new OCAgentDataExtractor();
+	private static Logger logger = LoggerFactory.getLogger(OCAgentDataExtractor.class);
+	private static OCMessage ocMessage;
 	private JavaSysMon javaSysMon = new JavaSysMon();
 	private String os;
 	private int cpuCount;
@@ -73,9 +69,14 @@ public class OCAgentDataExtractor {
 
 	private OCAgentDataExtractor() {
 		os = javaSysMon.osName();
-		cpuCount = javaSysMon.numCpus();
-		cpuSpeed = javaSysMon.cpuFrequencyInHz() / GIGA;
-		totalMemory = javaSysMon.physical().getTotalBytes() / MEGA;
+		cpuCount = 0;
+		cpuSpeed = 0;
+		totalMemory = 0;
+//		cpuCount = javaSysMon.numCpus();
+
+//		cpuSpeed = javaSysMon.cpuFrequencyInHz() / GIGA;
+
+//		totalMemory = javaSysMon.physical().getTotalBytes() / MEGA;
 	}
 
 	public static OCAgentDataExtractor getInstance() {
@@ -168,11 +169,10 @@ public class OCAgentDataExtractor {
 					while (childElements.hasNext()) {
 						OMElement childElement = (OMElement) childElements.next();
 						if (childElement != null) {
-							String propertyAttributeValue = childElement.
-									                                            getAttributeValue(
-											                                            childElement
-													                                            .resolveQName(
-															                                            PROPERTY_NAME));
+							String propertyAttributeValue = childElement.getAttributeValue(
+									childElement
+											.resolveQName(
+													PROPERTY_NAME));
 							if (propertyAttributeValue != null &&
 							    propertyAttributeValue.equalsIgnoreCase(SUB_DOMAIN)) {
 								subDomain = (childElement.getAttributeValue(
@@ -206,7 +206,7 @@ public class OCAgentDataExtractor {
 		return javaSysMon.physical().getFreeBytes() / MEGA;
 	}
 
-	public double getIdelCpuUsage() {
+	public double getIdleCpuUsage() {
 		long idle = javaSysMon.cpuTimes().getIdleMillis();
 		double total = javaSysMon.cpuTimes().getTotalMillis();
 		return (idle / total) * PERCENT;
@@ -269,14 +269,30 @@ public class OCAgentDataExtractor {
 		return operatingSystemMXBean.getSystemLoadAverage();
 	}
 
-	public Tenant[] getAllTenants() {
+	public List<org.wso2.carbon.oc.agent.beans.Tenant> getTenants() {
 		Tenant[] tenants = null;
+		List<org.wso2.carbon.oc.agent.beans.Tenant> tenantBeanList = new ArrayList<org.wso2.carbon.oc.agent.beans.Tenant>();
 		try {
-			tenants =  OCAgentDataHolder.getInstance().getRealmService().getTenantManager().getAllTenants();
+			tenants = OCAgentDataHolder.getInstance().getRealmService().getTenantManager()
+			                           .getAllTenants();
+			for(Tenant t : tenants) {
+				org.wso2.carbon.oc.agent.beans.Tenant tenantBean = new org.wso2.carbon.oc.agent.beans.Tenant();
+				tenantBean.setId(t.getId());
+				tenantBean.setAdminFirstName(t.getAdminFirstName());
+				tenantBean.setAdminLastName(t.getAdminLastName());
+				tenantBean.setAdminFullName(t.getAdminFullName());
+				tenantBean.setAdminName(t.getAdminName());
+				tenantBean.setCreatedDate(t.getCreatedDate());
+				tenantBean.setDomain(t.getDomain());
+				tenantBean.setActive(t.isActive());
+				tenantBean.setEmail(t.getEmail());
+
+				tenantBeanList.add(tenantBean);
+			}
 		} catch (UserStoreException e) {
-			logger.info("problem while gettiing all tenants", e);
+			logger.error("Failed to retrieve all tenants", e);
 		}
-		return tenants;
+		return tenantBeanList;
 	}
 
 	public List<String> getPatches() {
@@ -292,5 +308,44 @@ public class OCAgentDataExtractor {
 			Collections.sort(patches);
 		}
 		return patches;
+	}
+
+	public OCMessage getOcMessage() {
+		if (ocMessage == null) {
+			ocMessage = new OCMessage();
+		}
+
+		try {
+			ocMessage.setLocalIp(this.getLocalIp());
+			ocMessage.setServerName(this.getServerName());
+			ocMessage.setServerVersion(this.getServerVersion());
+			ocMessage.setDomain(this.getDomain());
+			ocMessage.setSubDomain(this.getSubDomain());
+			ocMessage.setServerStartTime(this.getServerStartTime());
+			ocMessage.setOs(this.getOs());
+			ocMessage.setTotalMemory(this.getTotalMemory());
+			ocMessage.setFreeMemory(this.getFreeMemory());
+			ocMessage.setCpuCount(this.getCpuCount());
+			ocMessage.setCpuSpeed(this.getCpuSpeed());
+			ocMessage.setAdminServiceUrl(this.getAdminServiceUrl());
+			ocMessage.setThreadCount(this.getThreadCount());
+			ocMessage.setSystemCpuUsage(this.getSystemCpuUsage());
+			ocMessage.setIdleCpuUsage(this.getIdleCpuUsage());
+			ocMessage.setUserCpuUsage(this.getUserCpuUsage());
+			ocMessage.setSystemLoadAverage(this.getSystemLoadAverage());
+			ocMessage.setTenants(this.getTenants());
+			ocMessage.setPatches(this.getPatches());
+
+			ocMessage.setServerUpTime(this.getServerUpTime());
+
+			String timestamp =
+					new java.text.SimpleDateFormat("MM/dd/yyyy h:mm:ss a").format(new Date());
+			ocMessage.setTimestamp(timestamp);
+
+		} catch (ParameterUnavailableException e) {
+			logger.error("Failed to read oc data parameters. ", e);
+		}
+
+		return ocMessage;
 	}
 }

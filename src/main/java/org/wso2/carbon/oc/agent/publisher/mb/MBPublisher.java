@@ -14,12 +14,13 @@
  * limitations under the License.
  */
 
-package org.wso2.carbon.oc.publisher;
+package org.wso2.carbon.oc.agent.publisher.mb;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.wso2.carbon.oc.internal.OCConstants;
-import org.wso2.carbon.oc.internal.messages.MessageUtil;
+import org.wso2.carbon.oc.agent.model.OCPublisherConfiguration;
+import org.wso2.carbon.oc.agent.message.OCMessage;
+import org.wso2.carbon.oc.agent.publisher.OCDataPublisher;
 
 import javax.jms.*;
 import javax.naming.Context;
@@ -33,19 +34,16 @@ import java.util.Properties;
  */
 public class MBPublisher implements OCDataPublisher {
 
-	private static Logger logger = LoggerFactory.getLogger(MBPublisher.class);
-
 	// mb queue names
 	private static final String REG_QUEUE = "RegisterRequest";
 	private static final String SYNC_QUEUE = "UpdateRequest";
-
 	// mb conf
 	private static final String QPID_ICF =
 			"org.wso2.andes.jndi.PropertiesFileInitialContextFactory";
 	private static final String CF_NAME_PREFIX = "connectionfactory.";
 	private static final String QUEUE_NAME_PREFIX = "queue.";
 	private static final String CF_NAME = "qpidConnectionfactory";
-
+	private static Logger logger = LoggerFactory.getLogger(MBPublisher.class);
 	private static String CARBON_CLIENT_ID = "carbon";
 	private static String CARBON_VIRTUAL_HOST_NAME = "carbon";
 
@@ -58,23 +56,23 @@ public class MBPublisher implements OCDataPublisher {
 
 	private boolean isRegistered = false;
 
-	public MBPublisher(Map<String, String> configMap) {
+	@Override public void init(OCPublisherConfiguration ocPublisherConfiguration) {
 		//get set config
-		this.username = configMap.get(OCConstants.USERNAME);
-		this.password = configMap.get(OCConstants.PASSWORD);
+		Map<String, String> configMap = ocPublisherConfiguration.getOcPublisherProperties().getPropertyMap();
+
+		this.username = configMap.get(MBConstants.USERNAME);
+		this.password = configMap.get(MBConstants.PASSWORD);
 		this.defaultHostName =
-				configMap.get(OCConstants.REPORT_HOST_NAME);
-		this.defaultPort = configMap.get(OCConstants.REPORT_PORT);
+				configMap.get(MBConstants.REPORT_HOST_NAME);
+		this.defaultPort = configMap.get(MBConstants.REPORT_PORT);
 
 		this.interval =
-				Long.parseLong(configMap.get(OCConstants.INTERVAL));
+				Long.parseLong(configMap.get(MBConstants.INTERVAL));
 		logger.info("MBPublisher init done");
 	}
 
-
 	/**
-	 *
-	 * @param queueName - String mb queue name
+	 * @param queueName   - String mb queue name
 	 * @param jsonMessage - String mb queue message json string
 	 */
 	public void sendMessages(String queueName, String jsonMessage) {
@@ -102,29 +100,24 @@ public class MBPublisher implements OCDataPublisher {
 			queueSession.close();
 			queueConnection.close();
 		} catch (JMSException e) {
-			logger.info("MBPublisher connection down", e);
+			logger.error("MBPublisher connection down", e);
 		} catch (NamingException e) {
-			logger.info("Naming error", e);
+			logger.error("Naming error", e);
 		}
-
-	}
-
-	@Override public void init() {
 
 	}
 
 	@Override
-	public void publish() {
-		logger.info("======wso2-mb===========reporting");
+	public void publish(OCMessage ocMessage) {
+		logger.debug("======wso2-mb===========reporting");
 		if (!isRegistered) {
-			sendMessages(REG_QUEUE, MessageUtil.getRegistrationPayload());
+			sendMessages(REG_QUEUE, MBMessageUtil.getRegistrationPayload(ocMessage));
 			isRegistered = true;
 		} else {
-			sendMessages(SYNC_QUEUE, MessageUtil.getSynchronizationPayload());
+			sendMessages(SYNC_QUEUE, MBMessageUtil.getSynchronizationPayload(ocMessage));
 		}
 
 	}
-
 
 	@Override
 	public long getInterval() {
@@ -132,7 +125,6 @@ public class MBPublisher implements OCDataPublisher {
 	}
 
 	/**
-	 *
 	 * @param username
 	 * @param password
 	 * @return String - conn url

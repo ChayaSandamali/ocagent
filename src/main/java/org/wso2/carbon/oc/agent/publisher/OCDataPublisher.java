@@ -14,10 +14,30 @@
  * limitations under the License.
  */
 
-package org.wso2.carbon.oc.internal.messages;
+package org.wso2.carbon.oc.agent.publisher;
+
+import org.wso2.carbon.oc.agent.model.OCPublisherConfiguration;
+import org.wso2.carbon.oc.agent.message.OCMessage;
 
 /**
- * Message interface, dynamically handles the message building
+ *
  */
-public interface Messager {
+public interface OCDataPublisher {
+
+	/**
+	 * @param ocPublisherConfiguration - operations-center.xml data OCPublisher object
+	 */
+	void init(OCPublisherConfiguration ocPublisherConfiguration);
+
+	/**
+	 * publish data to endpoint/resource
+	 * @param ocMessage  - oc data as object
+	 */
+	void publish(OCMessage ocMessage);
+
+	/**
+	 * @return interval time milli-seconds - periodical data publishing time
+	 */
+	long getInterval();
+
 }

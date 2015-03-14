@@ -14,13 +14,12 @@
  * limitations under the License.
  */
 
-package org.wso2.carbon.oc.internal;
+package org.wso2.carbon.oc.agent.internal;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wso2.carbon.base.api.ServerConfigurationService;
 import org.wso2.carbon.server.admin.common.IServerAdmin;
-import org.wso2.carbon.statistics.services.StatisticsAdmin;
 import org.wso2.carbon.user.core.service.RealmService;
 import org.wso2.carbon.utils.ConfigurationContextService;
 
@@ -28,12 +27,10 @@ public class OCAgentDataHolder {
 	private static OCAgentDataHolder instance = new OCAgentDataHolder();
 	private static Logger logger = LoggerFactory.getLogger(OCAgentDataHolder.class);
 
-	//    private OperationsCenterConnector operationsCenterConnector;
 	private ConfigurationContextService configurationContextService;
 	private ServerConfigurationService serverConfigurationService;
 	private IServerAdmin serverAdmin;           // server information, commands
 	private RealmService realmService;          // tenant information
-	private StatisticsAdmin statisticsAdmin;    // request, response count
 	private int serverId;
 
 	private OCAgentDataHolder() {
@@ -44,14 +41,8 @@ public class OCAgentDataHolder {
 		return instance;
 	}
 
-
 	public ConfigurationContextService getConfigurationContextService() {
 		return configurationContextService;
-	}
-
-	public void setServerConfigurationService(
-			ServerConfigurationService serverConfigurationService) {
-		this.serverConfigurationService = serverConfigurationService;
 	}
 
 	public void setConfigurationContextService(
@@ -63,12 +54,9 @@ public class OCAgentDataHolder {
 		return serverConfigurationService;
 	}
 
-	public StatisticsAdmin getStatisticsAdmin() {
-		return statisticsAdmin;
-	}
-
-	public void setStatisticsAdmin(StatisticsAdmin statisticsAdmin) {
-		this.statisticsAdmin = statisticsAdmin;
+	public void setServerConfigurationService(
+			ServerConfigurationService serverConfigurationService) {
+		this.serverConfigurationService = serverConfigurationService;
 	}
 
 	public IServerAdmin getServerAdmin() {
