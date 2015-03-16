@@ -16,7 +16,6 @@
 
 package org.wso2.carbon.oc.agent.message;
 
-
 import org.wso2.carbon.oc.agent.beans.Tenant;
 
 import java.util.List;
@@ -49,7 +48,7 @@ public class OCMessage {
 	private List<String> patches;
 	private String timestamp;
 
-	private Map<String, String> dataMap;
+	private Map<String, String> ocData;
 
 	public String getLocalIp() {
 		return localIp;
@@ -217,5 +216,13 @@ public class OCMessage {
 
 	public void setUserCpuUsage(double userCpuUsage) {
 		this.userCpuUsage = userCpuUsage;
+	}
+
+	public void addOcData(String key, String value) {
+		this.ocData.put(key, value);
+	}
+
+	public Map<String, String> getOcData() {
+		return this.ocData;
 	}
 }

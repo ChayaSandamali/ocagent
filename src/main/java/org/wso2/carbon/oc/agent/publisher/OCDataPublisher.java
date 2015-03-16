@@ -16,11 +16,11 @@
 
 package org.wso2.carbon.oc.agent.publisher;
 
-import org.wso2.carbon.oc.agent.model.OCPublisherConfiguration;
 import org.wso2.carbon.oc.agent.message.OCMessage;
+import org.wso2.carbon.oc.agent.model.OCPublisherConfiguration;
 
 /**
- *
+ * This abstract the oc publisher functionality
  */
 public interface OCDataPublisher {
 
@@ -31,7 +31,8 @@ public interface OCDataPublisher {
 
 	/**
 	 * publish data to endpoint/resource
-	 * @param ocMessage  - oc data as object
+	 *
+	 * @param ocMessage - oc data as object
 	 */
 	void publish(OCMessage ocMessage);
 

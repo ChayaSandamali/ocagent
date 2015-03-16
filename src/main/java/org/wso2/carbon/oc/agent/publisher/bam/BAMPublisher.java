@@ -21,8 +21,8 @@ import org.slf4j.LoggerFactory;
 import org.wso2.carbon.databridge.agent.thrift.DataPublisher;
 import org.wso2.carbon.databridge.agent.thrift.exception.AgentException;
 import org.wso2.carbon.databridge.commons.exception.*;
-import org.wso2.carbon.oc.agent.model.OCPublisherConfiguration;
 import org.wso2.carbon.oc.agent.message.OCMessage;
+import org.wso2.carbon.oc.agent.model.OCPublisherConfiguration;
 import org.wso2.carbon.oc.agent.publisher.OCDataPublisher;
 import org.wso2.carbon.utils.CarbonUtils;
 
@@ -34,7 +34,7 @@ import java.util.Map;
  */
 public class BAMPublisher implements OCDataPublisher {
 
-	static Logger logger = LoggerFactory.getLogger(BAMPublisher.class);
+	private static Logger logger = LoggerFactory.getLogger(BAMPublisher.class);
 	private static DataPublisher dataPublisher = null;
 	//config attributes
 	private String username;
@@ -46,7 +46,8 @@ public class BAMPublisher implements OCDataPublisher {
 
 	@Override public void init(OCPublisherConfiguration ocPublisherConfiguration) {
 		//load xml config
-		Map<String, String> configMap = ocPublisherConfiguration.getOcPublisherProperties().getPropertyMap();
+		Map<String, String> configMap =
+				ocPublisherConfiguration.getOcPublisherProperties().getPropertyMap();
 
 		this.username = configMap.get(BAMConstants.USERNAME);
 		this.password = configMap.get(BAMConstants.PASSWORD);
@@ -95,8 +96,6 @@ public class BAMPublisher implements OCDataPublisher {
 
 		return streamId;
 	}
-
-
 
 	private void setTrustStoreParams() {
 		System.setProperty("javax.net.ssl.trustStore",

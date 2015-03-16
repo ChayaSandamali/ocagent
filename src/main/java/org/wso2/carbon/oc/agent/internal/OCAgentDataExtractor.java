@@ -45,6 +45,7 @@ public class OCAgentDataExtractor {
 	private static final double PERCENT = 100;
 	private static final double MEGA = 1000000;
 	private static final double GIGA = 1000000000;
+	private static final int STRING_CAPACITY = 1000000000;
 	private static final String LOCAL_IP = "carbon.local.ip";
 	private static final String MGT_TRANSPORT_HTTPS_PORT = "mgt.transport.https.port";
 	private static final String NAME = "Name";
@@ -57,9 +58,9 @@ public class OCAgentDataExtractor {
 	private static final String PATCH_PATH =
 			CarbonUtils.getCarbonHome() + "/repository/components/patches";
 	private static final String PATCH = "patch";
+	private static final Logger logger = LoggerFactory.getLogger(OCAgentDataExtractor.class);
 	private static OCAgentDataExtractor instance =
 			new OCAgentDataExtractor();
-	private static Logger logger = LoggerFactory.getLogger(OCAgentDataExtractor.class);
 	private static OCMessage ocMessage;
 	private JavaSysMon javaSysMon = new JavaSysMon();
 	private String os;
@@ -69,13 +70,8 @@ public class OCAgentDataExtractor {
 
 	private OCAgentDataExtractor() {
 		os = javaSysMon.osName();
-		cpuCount = 0;
-		cpuSpeed = 0;
-		totalMemory = 0;
 //		cpuCount = javaSysMon.numCpus();
-
 //		cpuSpeed = javaSysMon.cpuFrequencyInHz() / GIGA;
-
 //		totalMemory = javaSysMon.physical().getTotalBytes() / MEGA;
 	}
 
@@ -230,7 +226,7 @@ public class OCAgentDataExtractor {
 		if (serverAdmin != null) {
 			try {
 				ServerUpTime serverUptime = serverAdmin.getServerData().getServerUpTime();
-				StringBuilder stringBuilder = new StringBuilder(64);
+				StringBuilder stringBuilder = new StringBuilder(STRING_CAPACITY);
 				stringBuilder.append(serverUptime.getDays());
 				stringBuilder.append("d ");
 				stringBuilder.append(serverUptime.getHours());
@@ -271,12 +267,14 @@ public class OCAgentDataExtractor {
 
 	public List<org.wso2.carbon.oc.agent.beans.Tenant> getTenants() {
 		Tenant[] tenants = null;
-		List<org.wso2.carbon.oc.agent.beans.Tenant> tenantBeanList = new ArrayList<org.wso2.carbon.oc.agent.beans.Tenant>();
+		List<org.wso2.carbon.oc.agent.beans.Tenant> tenantBeanList =
+				new ArrayList<org.wso2.carbon.oc.agent.beans.Tenant>();
 		try {
 			tenants = OCAgentDataHolder.getInstance().getRealmService().getTenantManager()
 			                           .getAllTenants();
-			for(Tenant t : tenants) {
-				org.wso2.carbon.oc.agent.beans.Tenant tenantBean = new org.wso2.carbon.oc.agent.beans.Tenant();
+			for (Tenant t : tenants) {
+				org.wso2.carbon.oc.agent.beans.Tenant tenantBean =
+						new org.wso2.carbon.oc.agent.beans.Tenant();
 				tenantBean.setId(t.getId());
 				tenantBean.setAdminFirstName(t.getAdminFirstName());
 				tenantBean.setAdminLastName(t.getAdminLastName());

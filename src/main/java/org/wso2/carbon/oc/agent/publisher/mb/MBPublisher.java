@@ -18,8 +18,8 @@ package org.wso2.carbon.oc.agent.publisher.mb;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.wso2.carbon.oc.agent.model.OCPublisherConfiguration;
 import org.wso2.carbon.oc.agent.message.OCMessage;
+import org.wso2.carbon.oc.agent.model.OCPublisherConfiguration;
 import org.wso2.carbon.oc.agent.publisher.OCDataPublisher;
 
 import javax.jms.*;
@@ -43,7 +43,7 @@ public class MBPublisher implements OCDataPublisher {
 	private static final String CF_NAME_PREFIX = "connectionfactory.";
 	private static final String QUEUE_NAME_PREFIX = "queue.";
 	private static final String CF_NAME = "qpidConnectionfactory";
-	private static Logger logger = LoggerFactory.getLogger(MBPublisher.class);
+	private static final Logger logger = LoggerFactory.getLogger(MBPublisher.class);
 	private static String CARBON_CLIENT_ID = "carbon";
 	private static String CARBON_VIRTUAL_HOST_NAME = "carbon";
 
@@ -58,7 +58,8 @@ public class MBPublisher implements OCDataPublisher {
 
 	@Override public void init(OCPublisherConfiguration ocPublisherConfiguration) {
 		//get set config
-		Map<String, String> configMap = ocPublisherConfiguration.getOcPublisherProperties().getPropertyMap();
+		Map<String, String> configMap =
+				ocPublisherConfiguration.getOcPublisherProperties().getPropertyMap();
 
 		this.username = configMap.get(MBConstants.USERNAME);
 		this.password = configMap.get(MBConstants.PASSWORD);

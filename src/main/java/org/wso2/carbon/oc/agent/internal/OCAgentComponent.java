@@ -56,9 +56,9 @@ import java.util.concurrent.TimeUnit;
  */
 
 public class OCAgentComponent {
-	private static final ScheduledExecutorService reporterTaskExecutor =
+	private static final ScheduledExecutorService REPORTER_TASK_EXECUTOR_SERVICE =
 			Executors.newScheduledThreadPool(1);
-	private static Logger logger = LoggerFactory.getLogger(OCAgentComponent.class);
+	private static final Logger logger = LoggerFactory.getLogger(OCAgentComponent.class);
 
 	protected void activate(ComponentContext componentContext) {
 		try {
@@ -69,18 +69,17 @@ public class OCAgentComponent {
 
 			//active publisher config map
 			for (OCPublisherConfiguration ocPublisherConfiguration : ocPublisherConfigurationList) {
-				OCDataPublisher ocDataPublisher = null;
 
 				Class publisherClass = Class.forName(ocPublisherConfiguration.getClassPath());
 
-				ocDataPublisher = (OCDataPublisher) publisherClass.newInstance();
+				OCDataPublisher ocDataPublisher = (OCDataPublisher) publisherClass.newInstance();
 
 				ocDataPublisher.init(ocPublisherConfiguration);
 
 				OCAgentReporterTask ocAgentReporterTask
 						= new OCAgentReporterTask(ocDataPublisher);
 
-				reporterTaskExecutor.scheduleAtFixedRate(ocAgentReporterTask,
+				REPORTER_TASK_EXECUTOR_SERVICE.scheduleAtFixedRate(ocAgentReporterTask,
 				                                         0,
 				                                         ocDataPublisher.getInterval(),
 				                                         TimeUnit.MILLISECONDS);
@@ -88,15 +87,14 @@ public class OCAgentComponent {
 
 		} catch (Throwable throwable) {
 			logger.error("Failed to activate OperationsCenterAgentComponent", throwable);
-			reporterTaskExecutor.shutdown();
+			REPORTER_TASK_EXECUTOR_SERVICE.shutdown();
 		}
-
 
 	}
 
 	protected void deactivate(ComponentContext componentContext) {
 		logger.info("Deactivating Operations Center Agent component.");
-		reporterTaskExecutor.shutdown();
+		REPORTER_TASK_EXECUTOR_SERVICE.shutdown();
 	}
 
 	protected void unsetConfigurationContextService(

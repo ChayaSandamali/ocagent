@@ -19,8 +19,8 @@ package org.wso2.carbon.oc.agent.publisher.mb;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.wso2.carbon.oc.agent.internal.OCAgentConstants;
 import org.wso2.carbon.oc.agent.message.OCMessage;
+import org.wso2.carbon.oc.agent.message.OCMessageConstants;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -30,7 +30,7 @@ import java.util.Map;
  * MB utility
  */
 public class MBMessageUtil {
-	private static Logger logger = LoggerFactory.getLogger(MBMessageUtil.class);
+	private static final Logger logger = LoggerFactory.getLogger(MBMessageUtil.class);
 	private static ObjectMapper objectMapper = new ObjectMapper(); // for json conversion
 
 	private MBMessageUtil() {
@@ -52,28 +52,27 @@ public class MBMessageUtil {
 		//payload map
 		Map<String, Object> payload = new HashMap<String, Object>();
 
-
-		payload.put(OCAgentConstants.SYSTEM_LOCAL_IP,
+		payload.put(OCMessageConstants.SYSTEM_LOCAL_IP,
 		            ocMessage.getLocalIp());
-		payload.put(OCAgentConstants.SERVER_NAME, ocMessage.getServerName());
-		payload.put(OCAgentConstants.SERVER_VERSION, ocMessage.getServerVersion());
-		payload.put(OCAgentConstants.SERVER_DOMAIN, ocMessage.getDomain());
-		payload.put(OCAgentConstants.SERVER_SUBDOMAIN,
+		payload.put(OCMessageConstants.SERVER_NAME, ocMessage.getServerName());
+		payload.put(OCMessageConstants.SERVER_VERSION, ocMessage.getServerVersion());
+		payload.put(OCMessageConstants.SERVER_DOMAIN, ocMessage.getDomain());
+		payload.put(OCMessageConstants.SERVER_SUBDOMAIN,
 		            ocMessage.getSubDomain());
-		payload.put(OCAgentConstants.SERVER_ADMIN_SERVICE_URL,
+		payload.put(OCMessageConstants.SERVER_ADMIN_SERVICE_URL,
 		            ocMessage.getAdminServiceUrl());
-		payload.put(OCAgentConstants.SERVER_START_TIME,
+		payload.put(OCMessageConstants.SERVER_START_TIME,
 		            ocMessage.getServerStartTime());
-		payload.put(OCAgentConstants.SYSTEM_OS, ocMessage.getOs());
-		payload.put(OCAgentConstants.SYSTEM_TOTAL_MEMORY,
+		payload.put(OCMessageConstants.SYSTEM_OS, ocMessage.getOs());
+		payload.put(OCMessageConstants.SYSTEM_TOTAL_MEMORY,
 		            ocMessage.getTotalMemory());
-		payload.put(OCAgentConstants.SYSTEM_CPU_COUNT,
+		payload.put(OCMessageConstants.SYSTEM_CPU_COUNT,
 		            ocMessage.getCpuCount());
-		payload.put(OCAgentConstants.SYSTEM_CPU_SPEED,
+		payload.put(OCMessageConstants.SYSTEM_CPU_SPEED,
 		            ocMessage.getCpuSpeed());
-		payload.put(OCAgentConstants.SERVER_TIMESTAMP,
+		payload.put(OCMessageConstants.SERVER_TIMESTAMP,
 		            ocMessage.getTimestamp());
-		payload.put(OCAgentConstants.SERVER_PATCHES, ocMessage.getPatches());
+		payload.put(OCMessageConstants.SERVER_PATCHES, ocMessage.getPatches());
 
 		event.put("payload", payload);
 		root.put("event", event);
@@ -105,23 +104,23 @@ public class MBMessageUtil {
 		//payload map
 		Map<String, Object> payload = new HashMap<String, Object>();
 
-		payload.put(OCAgentConstants.SERVER_TENANTS, ocMessage.getTenants());
-		payload.put(OCAgentConstants.SERVER_TIMESTAMP,
+		payload.put(OCMessageConstants.SERVER_TENANTS, ocMessage.getTenants());
+		payload.put(OCMessageConstants.SERVER_TIMESTAMP,
 		            ocMessage.getTimestamp());
-		payload.put(OCAgentConstants.SYSTEM_LOAD_AVERAGE,
+		payload.put(OCMessageConstants.SYSTEM_LOAD_AVERAGE,
 		            ocMessage.getSystemLoadAverage());
-		payload.put(OCAgentConstants.SERVER_THREAD_COUNT,
+		payload.put(OCMessageConstants.SERVER_THREAD_COUNT,
 		            ocMessage.getThreadCount());
-		payload.put(OCAgentConstants.SERVER_UPTIME, ocMessage.getServerUpTime());
-		payload.put(OCAgentConstants.SERVER_ADMIN_SERVICE_URL,
+		payload.put(OCMessageConstants.SERVER_UPTIME, ocMessage.getServerUpTime());
+		payload.put(OCMessageConstants.SERVER_ADMIN_SERVICE_URL,
 		            ocMessage.getAdminServiceUrl());
-		payload.put(OCAgentConstants.SYSTEM_USER_CPU_USAGE,
+		payload.put(OCMessageConstants.SYSTEM_USER_CPU_USAGE,
 		            ocMessage.getUserCpuUsage());
-		payload.put(OCAgentConstants.SYSTEM_SYSTEM_CPU_USAGE,
+		payload.put(OCMessageConstants.SYSTEM_SYSTEM_CPU_USAGE,
 		            ocMessage.getSystemCpuUsage());
-		payload.put(OCAgentConstants.SYSTEM_IDLE_CPU_USAGE,
+		payload.put(OCMessageConstants.SYSTEM_IDLE_CPU_USAGE,
 		            ocMessage.getIdleCpuUsage());
-		payload.put(OCAgentConstants.SYSTEM_FREE_MEMORY,
+		payload.put(OCMessageConstants.SYSTEM_FREE_MEMORY,
 		            ocMessage.getFreeMemory());
 
 		event.put("payload", payload);

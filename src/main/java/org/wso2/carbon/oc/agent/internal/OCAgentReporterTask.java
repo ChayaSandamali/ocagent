@@ -25,7 +25,7 @@ import org.wso2.carbon.oc.agent.publisher.OCDataPublisher;
  */
 
 public class OCAgentReporterTask implements Runnable {
-	private static Logger logger = LoggerFactory.getLogger(OCAgentReporterTask.class);
+//	private static final Logger logger = LoggerFactory.getLogger(OCAgentReporterTask.class);
 
 	private OCDataPublisher ocDataPublisher;
 

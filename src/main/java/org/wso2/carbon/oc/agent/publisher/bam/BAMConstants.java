@@ -5,7 +5,6 @@ package org.wso2.carbon.oc.agent.publisher.bam;
  */
 public class BAMConstants {
 
-
 	//bam publisher specific xml attrs
 	public static final String REPORT_HOST_NAME = "reportHostName";
 	public static final String THRIFT_PORT = "thriftPort";
@@ -14,6 +13,6 @@ public class BAMConstants {
 	public static final String PASSWORD = "password";
 	public static final String INTERVAL = "interval";
 
-
-	private BAMConstants(){}
+	private BAMConstants() {
+	}
 }

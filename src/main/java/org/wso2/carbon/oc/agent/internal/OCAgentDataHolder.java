@@ -24,13 +24,14 @@ import org.wso2.carbon.user.core.service.RealmService;
 import org.wso2.carbon.utils.ConfigurationContextService;
 
 public class OCAgentDataHolder {
+//	private static final Logger logger = LoggerFactory.getLogger(OCAgentDataHolder.class);
 	private static OCAgentDataHolder instance = new OCAgentDataHolder();
-	private static Logger logger = LoggerFactory.getLogger(OCAgentDataHolder.class);
-
 	private ConfigurationContextService configurationContextService;
 	private ServerConfigurationService serverConfigurationService;
-	private IServerAdmin serverAdmin;           // server information, commands
-	private RealmService realmService;          // tenant information
+	// server information, commands
+	private IServerAdmin serverAdmin;
+	// tenant information
+	private RealmService realmService;
 	private int serverId;
 
 	private OCAgentDataHolder() {

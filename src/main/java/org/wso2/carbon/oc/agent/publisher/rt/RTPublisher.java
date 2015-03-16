@@ -30,11 +30,10 @@ import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.type.TypeReference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.wso2.carbon.oc.agent.internal.OCAgentConstants;
-import org.wso2.carbon.oc.agent.internal.OCAgentDataExtractor;
 import org.wso2.carbon.oc.agent.internal.OCAgentUtils;
-import org.wso2.carbon.oc.agent.model.OCPublisherConfiguration;
 import org.wso2.carbon.oc.agent.message.OCMessage;
+import org.wso2.carbon.oc.agent.message.OCMessageConstants;
+import org.wso2.carbon.oc.agent.model.OCPublisherConfiguration;
 import org.wso2.carbon.oc.agent.publisher.OCDataPublisher;
 
 import java.io.IOException;
@@ -49,13 +48,12 @@ import java.util.Map;
  */
 public class RTPublisher implements OCDataPublisher {
 
-	private String serverId;
 	private static final String REGISTRATION_PATH = "/servers";
 	private static final String SYNCHRONIZATION_PATH = "/servers/";
 	private static final String CONTENT_TYPE = "application/json";
 	private static final String CHARACTER_SET = "UTF-8";
-
-	private static Logger logger = LoggerFactory.getLogger(RTPublisher.class);
+	private static final Logger logger = LoggerFactory.getLogger(RTPublisher.class);
+	private String serverId;
 	private ObjectMapper objectMapper = new ObjectMapper();
 	private HttpClient httpClient;
 	private boolean isRegistered = false;
@@ -64,7 +62,8 @@ public class RTPublisher implements OCDataPublisher {
 
 	@Override public void init(OCPublisherConfiguration ocPublisherConfiguration) {
 		// get set config
-		Map<String, String> configMap = ocPublisherConfiguration.getOcPublisherProperties().getPropertyMap();
+		Map<String, String> configMap =
+				ocPublisherConfiguration.getOcPublisherProperties().getPropertyMap();
 
 		String username = configMap.get(RTConstants.USERNAME);
 		String password = configMap.get(RTConstants.PASSWORD);
@@ -82,7 +81,6 @@ public class RTPublisher implements OCDataPublisher {
 		this.httpClient.getParams().setAuthenticationPreemptive(true);
 		logger.info("RTPublisher init done");
 
-
 	}
 
 	@Override
@@ -98,13 +96,13 @@ public class RTPublisher implements OCDataPublisher {
 
 	/**
 	 * send the real time registration message
+	 *
 	 * @param ocMessage - all oc data
 	 */
 	private void register(OCMessage ocMessage) {
 
 		String jsonString = RTMessageUtil.getRegistrationRequestMessage(ocMessage);
 
-		//request check
 		String responseBody = null;
 		try {
 			responseBody =
@@ -122,10 +120,9 @@ public class RTPublisher implements OCDataPublisher {
 				regResMap = objectMapper
 						.readValue(responseBody, new TypeReference<HashMap<String, String>>() {
 						});
-				if(regResMap != null){
-					serverId = regResMap.get(OCAgentConstants.SERVER_ID);
+				if (regResMap != null) {
+					serverId = regResMap.get(OCMessageConstants.SERVER_ID);
 				}
-
 
 				isRegistered = true;
 			} catch (IOException e) {
@@ -137,6 +134,7 @@ public class RTPublisher implements OCDataPublisher {
 
 	/**
 	 * send the real time synchronization message
+	 *
 	 * @param ocMessage - all oc data
 	 */
 	private void sync(OCMessage ocMessage) {
@@ -147,7 +145,8 @@ public class RTPublisher implements OCDataPublisher {
 		//request check
 		try {
 			responseBody =
-					sendPutRequest(ocUrl + SYNCHRONIZATION_PATH + serverId, jsonString, HttpStatus.SC_OK);
+					sendPutRequest(ocUrl + SYNCHRONIZATION_PATH + serverId, jsonString,
+					               HttpStatus.SC_OK);
 		} catch (IOException e) {
 			logger.error("RTPublisher connection down while sync messaging: ", e);
 			isRegistered = false;
@@ -169,7 +168,7 @@ public class RTPublisher implements OCDataPublisher {
 			}
 
 			if (synResMap != null) {
-				for(String command : synResMap) {
+				for (String command : synResMap) {
 					OCAgentUtils.performAction(command);
 					logger.debug("Executing command. [Command:" + command + "]");
 				}
@@ -181,7 +180,6 @@ public class RTPublisher implements OCDataPublisher {
 	}
 
 	/**
-	 *
 	 * @param url      String - operations center url
 	 * @param request  String - json string request message
 	 * @param expected int - expected http status code
@@ -197,16 +195,16 @@ public class RTPublisher implements OCDataPublisher {
 				logger.trace("Sending POST request. " + request);
 			}
 
-				int statusCode = httpClient.executeMethod(postMethod);
-				if (statusCode == expected) {
-					String responseBody = postMethod.getResponseBodyAsString();
-					if (logger.isTraceEnabled()) {
-						logger.trace("Response received. " + responseBody);
-					}
-					return responseBody;
-				} else {
-					logger.error("Request failed with status Code : " + statusCode);
+			int statusCode = httpClient.executeMethod(postMethod);
+			if (statusCode == expected) {
+				String responseBody = postMethod.getResponseBodyAsString();
+				if (logger.isTraceEnabled()) {
+					logger.trace("Response received. " + responseBody);
 				}
+				return responseBody;
+			} else {
+				logger.error("Request failed with status Code : " + statusCode);
+			}
 		} catch (UnsupportedEncodingException e) {
 			logger.error("Failed to register with Operations Center", e);
 		} finally {
@@ -216,7 +214,6 @@ public class RTPublisher implements OCDataPublisher {
 	}
 
 	/**
-	 *
 	 * @param url      String - operations center url
 	 * @param request  String - json string request message
 	 * @param expected int - expected http status code

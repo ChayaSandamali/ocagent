@@ -5,7 +5,6 @@ package org.wso2.carbon.oc.agent.publisher.mb;
  */
 public class MBConstants {
 
-
 	//mb publisher specific xml attrs
 	public static final String REPORT_HOST_NAME = "reportHostName";
 	public static final String REPORT_PORT = "reportHttpPort";
@@ -13,5 +12,6 @@ public class MBConstants {
 	public static final String PASSWORD = "password";
 	public static final String INTERVAL = "interval";
 
-	private MBConstants() {}
+	private MBConstants() {
+	}
 }

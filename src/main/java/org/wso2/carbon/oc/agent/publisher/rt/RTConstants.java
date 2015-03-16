@@ -11,5 +11,6 @@ public class RTConstants {
 	public static final String PASSWORD = "password";
 	public static final String INTERVAL = "interval";
 
-	private RTConstants() {}
+	private RTConstants() {
+	}
 }

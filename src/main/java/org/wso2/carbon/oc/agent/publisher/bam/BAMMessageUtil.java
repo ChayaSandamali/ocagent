@@ -19,8 +19,8 @@ package org.wso2.carbon.oc.agent.publisher.bam;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.wso2.carbon.oc.agent.internal.OCAgentConstants;
 import org.wso2.carbon.oc.agent.message.OCMessage;
+import org.wso2.carbon.oc.agent.message.OCMessageConstants;
 
 import java.io.IOException;
 import java.util.*;
@@ -29,17 +29,19 @@ import java.util.*;
  * BAM message utility
  */
 public class BAMMessageUtil {
-	private static Logger logger = LoggerFactory.getLogger(BAMMessageUtil.class);
-	private static ObjectMapper objectMapper = new ObjectMapper();  // for json conversion
-	private static String bamRegisterPayloadDef;// BAM registration message payload definition
-	private static String bamSyncPayloadDef;// BAM synchronization message payload definition
+	private static final Logger logger = LoggerFactory.getLogger(BAMMessageUtil.class);
+	private static ObjectMapper objectMapper = new ObjectMapper();
+	// BAM registration message payload definition
+	private static String bamRegisterPayloadDef;
+	// BAM synchronization message payload definition
+	private static String bamSyncPayloadDef;
 
 	//stream names
 	private static final String REGISTER_STREAM = "RegisterStream";
 	private static final String SYNC_STREAM = "SyncStream";
 
-
-	private BAMMessageUtil() {}
+	private BAMMessageUtil() {
+	}
 
 	/**
 	 * @return String - register message stream definition json
@@ -79,6 +81,7 @@ public class BAMMessageUtil {
 
 	/**
 	 * This builds the final BAM registration json message
+	 *
 	 * @param dataMap - all oc data map
 	 * @return object array of individual values
 	 */
@@ -87,16 +90,16 @@ public class BAMMessageUtil {
 		Map<String, Object> map = dataMap;
 		List<Object> objList = new ArrayList<Object>();
 		String keySequence[] = {
-				OCAgentConstants.SYSTEM_OS, OCAgentConstants.SYSTEM_CPU_COUNT,
-				OCAgentConstants.SYSTEM_CPU_SPEED, OCAgentConstants.SYSTEM_TOTAL_MEMORY,
-				OCAgentConstants.SERVER_SUBDOMAIN, OCAgentConstants.SERVER_VERSION,
-				OCAgentConstants.SERVER_NAME, OCAgentConstants.SERVER_ADMIN_SERVICE_URL,
-				OCAgentConstants.SYSTEM_LOCAL_IP, OCAgentConstants.SERVER_START_TIME,
-				OCAgentConstants.SERVER_TIMESTAMP, OCAgentConstants.SERVER_PATCHES,
-				OCAgentConstants.SERVER_DOMAIN };
+				OCMessageConstants.SYSTEM_OS, OCMessageConstants.SYSTEM_CPU_COUNT,
+				OCMessageConstants.SYSTEM_CPU_SPEED, OCMessageConstants.SYSTEM_TOTAL_MEMORY,
+				OCMessageConstants.SERVER_SUBDOMAIN, OCMessageConstants.SERVER_VERSION,
+				OCMessageConstants.SERVER_NAME, OCMessageConstants.SERVER_ADMIN_SERVICE_URL,
+				OCMessageConstants.SYSTEM_LOCAL_IP, OCMessageConstants.SERVER_START_TIME,
+				OCMessageConstants.SERVER_TIMESTAMP, OCMessageConstants.SERVER_PATCHES,
+				OCMessageConstants.SERVER_DOMAIN };
 
 		for (String key : keySequence) {
-			if (OCAgentConstants.SERVER_PATCHES.equals(key)) {
+			if (OCMessageConstants.SERVER_PATCHES.equals(key)) {
 				objList.add(" ");
 				continue;
 			}
@@ -110,9 +113,9 @@ public class BAMMessageUtil {
 		return objList.toArray();
 	}
 
-
 	/**
 	 * This builds the final BAM synchronize json message
+	 *
 	 * @param dataMap - all oc data map
 	 * @return object array of individual values
 	 */
@@ -121,14 +124,14 @@ public class BAMMessageUtil {
 		Map<String, Object> map = dataMap;
 		List<Object> objList = new ArrayList<Object>();
 		String keySequence[] = {
-				OCAgentConstants.SERVER_TIMESTAMP, OCAgentConstants.SYSTEM_USER_CPU_USAGE,
-				OCAgentConstants.SYSTEM_IDLE_CPU_USAGE, OCAgentConstants.SYSTEM_LOAD_AVERAGE,
-				OCAgentConstants.SERVER_TENANTS, OCAgentConstants.SERVER_THREAD_COUNT,
-				OCAgentConstants.SYSTEM_FREE_MEMORY, OCAgentConstants.SYSTEM_SYSTEM_CPU_USAGE,
-				OCAgentConstants.SERVER_UPTIME, OCAgentConstants.SERVER_ADMIN_SERVICE_URL };
+				OCMessageConstants.SERVER_TIMESTAMP, OCMessageConstants.SYSTEM_USER_CPU_USAGE,
+				OCMessageConstants.SYSTEM_IDLE_CPU_USAGE, OCMessageConstants.SYSTEM_LOAD_AVERAGE,
+				OCMessageConstants.SERVER_TENANTS, OCMessageConstants.SERVER_THREAD_COUNT,
+				OCMessageConstants.SYSTEM_FREE_MEMORY, OCMessageConstants.SYSTEM_SYSTEM_CPU_USAGE,
+				OCMessageConstants.SERVER_UPTIME, OCMessageConstants.SERVER_ADMIN_SERVICE_URL };
 
 		for (String key : keySequence) {
-			if (OCAgentConstants.SERVER_TENANTS.equals(key)) {
+			if (OCMessageConstants.SERVER_TENANTS.equals(key)) {
 				objList.add(" ");
 				continue;
 			}
@@ -169,16 +172,20 @@ public class BAMMessageUtil {
 		String jsonStr = null;
 		try {
 			jsonStr = objectMapper.writeValueAsString(resultMapList);
+			if(jsonStr != null) {
+				jsonStr = jsonStr.replaceAll("\\[|\\]", "");
+			}
 		} catch (IOException e) {
 			logger.error("Cannot convert the payload definition", e);
 		}
-		jsonStr = jsonStr.replaceAll("\\[|\\]", "");
+
 
 		return jsonStr;
 	}
 
 	/**
 	 * This builds the registration message from all oc data map
+	 *
 	 * @param ocMessage - all oc data map
 	 * @return Map<String, Object> - filtered static oc data map
 	 */
@@ -186,85 +193,85 @@ public class BAMMessageUtil {
 
 		Map<String, Object> regDataMap = new HashMap<String, Object>();
 
-		regDataMap.put(OCAgentConstants.SYSTEM_LOCAL_IP,
+		regDataMap.put(OCMessageConstants.SYSTEM_LOCAL_IP,
 		               ocMessage.getLocalIp());
-		regDataMap.put(OCAgentConstants.SERVER_NAME, ocMessage.getServerName());
+		regDataMap.put(OCMessageConstants.SERVER_NAME, ocMessage.getServerName());
 		regDataMap
-				.put(OCAgentConstants.SERVER_VERSION, ocMessage.getServerVersion());
-		regDataMap.put(OCAgentConstants.SERVER_DOMAIN, ocMessage.getDomain());
-		regDataMap.put(OCAgentConstants.SERVER_SUBDOMAIN,
+				.put(OCMessageConstants.SERVER_VERSION, ocMessage.getServerVersion());
+		regDataMap.put(OCMessageConstants.SERVER_DOMAIN, ocMessage.getDomain());
+		regDataMap.put(OCMessageConstants.SERVER_SUBDOMAIN,
 		               ocMessage.getSubDomain());
-		regDataMap.put(OCAgentConstants.SERVER_ADMIN_SERVICE_URL,
+		regDataMap.put(OCMessageConstants.SERVER_ADMIN_SERVICE_URL,
 		               ocMessage.getAdminServiceUrl());
-		regDataMap.put(OCAgentConstants.SERVER_START_TIME,
+		regDataMap.put(OCMessageConstants.SERVER_START_TIME,
 		               ocMessage.getServerStartTime());
-		regDataMap.put(OCAgentConstants.SYSTEM_OS, ocMessage.getOs());
-		regDataMap.put(OCAgentConstants.SYSTEM_TOTAL_MEMORY,
+		regDataMap.put(OCMessageConstants.SYSTEM_OS, ocMessage.getOs());
+		regDataMap.put(OCMessageConstants.SYSTEM_TOTAL_MEMORY,
 		               ocMessage.getTotalMemory());
-		regDataMap.put(OCAgentConstants.SYSTEM_CPU_COUNT,
+		regDataMap.put(OCMessageConstants.SYSTEM_CPU_COUNT,
 		               ocMessage.getCpuCount());
-		regDataMap.put(OCAgentConstants.SYSTEM_CPU_SPEED,
+		regDataMap.put(OCMessageConstants.SYSTEM_CPU_SPEED,
 		               ocMessage.getCpuSpeed());
-		regDataMap.put(OCAgentConstants.SERVER_TIMESTAMP,
+		regDataMap.put(OCMessageConstants.SERVER_TIMESTAMP,
 		               ocMessage.getTimestamp());
 		regDataMap
-				.put(OCAgentConstants.SERVER_PATCHES, ocMessage.getPatches());
+				.put(OCMessageConstants.SERVER_PATCHES, ocMessage.getPatches());
 
 		return regDataMap;
 	}
 
 	/**
 	 * This builds the synchronize message from all oc data map
+	 *
 	 * @param ocMessage - all oc data map
 	 * @return Map<String, Object> - filtered dynamic oc data map
 	 */
 	private static Map<String, Object> getBAMSynchronizationDataMap(OCMessage ocMessage) {
 		Map<String, Object> syncDataMap = new HashMap<String, Object>();
 
-		syncDataMap.put(OCAgentConstants.SERVER_TENANTS, ocMessage.getTenants());
-		syncDataMap.put(OCAgentConstants.SERVER_TIMESTAMP,
+		syncDataMap.put(OCMessageConstants.SERVER_TENANTS, ocMessage.getTenants());
+		syncDataMap.put(OCMessageConstants.SERVER_TIMESTAMP,
 		                ocMessage.getTimestamp());
-		syncDataMap.put(OCAgentConstants.SYSTEM_LOAD_AVERAGE,
+		syncDataMap.put(OCMessageConstants.SYSTEM_LOAD_AVERAGE,
 		                ocMessage.getSystemLoadAverage());
-		syncDataMap.put(OCAgentConstants.SERVER_THREAD_COUNT,
+		syncDataMap.put(OCMessageConstants.SERVER_THREAD_COUNT,
 		                ocMessage.getThreadCount());
-		syncDataMap.put(OCAgentConstants.SERVER_UPTIME, ocMessage.getServerUpTime());
-		syncDataMap.put(OCAgentConstants.SERVER_ADMIN_SERVICE_URL,
+		syncDataMap.put(OCMessageConstants.SERVER_UPTIME, ocMessage.getServerUpTime());
+		syncDataMap.put(OCMessageConstants.SERVER_ADMIN_SERVICE_URL,
 		                ocMessage.getAdminServiceUrl());
-		syncDataMap.put(OCAgentConstants.SYSTEM_USER_CPU_USAGE,
+		syncDataMap.put(OCMessageConstants.SYSTEM_USER_CPU_USAGE,
 		                ocMessage.getUserCpuUsage());
-		syncDataMap.put(OCAgentConstants.SYSTEM_SYSTEM_CPU_USAGE,
+		syncDataMap.put(OCMessageConstants.SYSTEM_SYSTEM_CPU_USAGE,
 		                ocMessage.getSystemCpuUsage());
-		syncDataMap.put(OCAgentConstants.SYSTEM_IDLE_CPU_USAGE,
+		syncDataMap.put(OCMessageConstants.SYSTEM_IDLE_CPU_USAGE,
 		                ocMessage.getIdleCpuUsage());
-		syncDataMap.put(OCAgentConstants.SYSTEM_FREE_MEMORY,
+		syncDataMap.put(OCMessageConstants.SYSTEM_FREE_MEMORY,
 		                ocMessage.getFreeMemory());
-
-
 
 		return syncDataMap;
 	}
 
 	/**
 	 * This builds the registration payload structure
+	 *
 	 * @param regDataMap - registration data map
 	 * @return String - json
 	 */
 	private static String getBAMRegPayloadDef(Map<String, Object> regDataMap) {
-		if(bamRegisterPayloadDef == null) {
+		if (bamRegisterPayloadDef == null) {
 			bamRegisterPayloadDef = getBAMPayloadDef(regDataMap);
 		}
 		return bamRegisterPayloadDef;
 	}
 
-
 	/**
 	 * This builds the synchronize payload structure
+	 *
 	 * @param syncDataMap - synchronize data map
 	 * @return String - json
 	 */
 	private static String getBAMSyncPayloadDef(Map<String, Object> syncDataMap) {
-		if(bamSyncPayloadDef == null) {
+		if (bamSyncPayloadDef == null) {
 			bamSyncPayloadDef = getBAMPayloadDef(syncDataMap);
 		}
 		return bamSyncPayloadDef;
@@ -280,14 +287,12 @@ public class BAMMessageUtil {
 	private static boolean isNumber(String s) {
 		boolean result = false;
 		try {
-			double d = Double.parseDouble(s);
+			Double.parseDouble(s);
 			result = true;
 		} catch (NumberFormatException e) {
 			return result;
 		}
 		return result;
 	}
-
-
 
 }

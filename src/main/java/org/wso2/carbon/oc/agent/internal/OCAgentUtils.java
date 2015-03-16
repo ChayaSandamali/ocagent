@@ -39,22 +39,21 @@ public class OCAgentUtils {
 	private static final String FORCE_RESTART = "FORCE_RESTART";
 	private static final String GRACEFUL_SHUTDOWN = "GRACEFUL_SHUTDOWN";
 	private static final String GRACEFUL_RESTART = "GRACEFUL_RESTART";
-	private static Logger logger = LoggerFactory.getLogger(OCAgentUtils.class);
+	private static final Logger logger = LoggerFactory.getLogger(OCAgentUtils.class);
 
 	private OCAgentUtils() {
 	}
 
 	/**
 	 * Extract all enabled publisher info
+	 *
 	 * @return Publishers - get all publisher objects
 	 */
-	//handle NPE
 	public static OCPublishers getOcPublishers() {
 		OCPublishers publishers = null;
 		try {
 			JAXBContext context = JAXBContext.newInstance(OCConfiguration.class);
 			Unmarshaller um = context.createUnmarshaller();
-			//TODO
 			OCConfiguration oc = (OCConfiguration) um.unmarshal(new FileReader(
 					CarbonUtils.getCarbonConfigDirPath() + File.separator +
 					OCAgentConstants.OC_XML));
