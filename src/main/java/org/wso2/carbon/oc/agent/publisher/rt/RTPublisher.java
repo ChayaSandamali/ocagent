@@ -33,6 +33,7 @@ import org.slf4j.LoggerFactory;
 import org.wso2.carbon.oc.agent.internal.OCAgentConstants;
 import org.wso2.carbon.oc.agent.internal.OCAgentDataExtractor;
 import org.wso2.carbon.oc.agent.internal.OCAgentUtils;
+import org.wso2.carbon.oc.agent.message.OCMessageConstants;
 import org.wso2.carbon.oc.agent.model.OCPublisherConfiguration;
 import org.wso2.carbon.oc.agent.message.OCMessage;
 import org.wso2.carbon.oc.agent.publisher.OCDataPublisher;
@@ -123,7 +124,7 @@ public class RTPublisher implements OCDataPublisher {
 						.readValue(responseBody, new TypeReference<HashMap<String, String>>() {
 						});
 				if(regResMap != null){
-					serverId = regResMap.get(OCAgentConstants.SERVER_ID);
+					serverId = regResMap.get(OCMessageConstants.SERVER_ID);
 				}
 
 

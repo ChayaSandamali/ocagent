@@ -21,6 +21,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wso2.carbon.oc.agent.internal.OCAgentConstants;
 import org.wso2.carbon.oc.agent.message.OCMessage;
+import org.wso2.carbon.oc.agent.message.OCMessageConstants;
 
 import java.io.IOException;
 import java.util.*;
@@ -87,16 +88,16 @@ public class BAMMessageUtil {
 		Map<String, Object> map = dataMap;
 		List<Object> objList = new ArrayList<Object>();
 		String keySequence[] = {
-				OCAgentConstants.SYSTEM_OS, OCAgentConstants.SYSTEM_CPU_COUNT,
-				OCAgentConstants.SYSTEM_CPU_SPEED, OCAgentConstants.SYSTEM_TOTAL_MEMORY,
-				OCAgentConstants.SERVER_SUBDOMAIN, OCAgentConstants.SERVER_VERSION,
-				OCAgentConstants.SERVER_NAME, OCAgentConstants.SERVER_ADMIN_SERVICE_URL,
-				OCAgentConstants.SYSTEM_LOCAL_IP, OCAgentConstants.SERVER_START_TIME,
-				OCAgentConstants.SERVER_TIMESTAMP, OCAgentConstants.SERVER_PATCHES,
-				OCAgentConstants.SERVER_DOMAIN };
+				OCMessageConstants.SYSTEM_OS, OCMessageConstants.SYSTEM_CPU_COUNT,
+				OCMessageConstants.SYSTEM_CPU_SPEED, OCMessageConstants.SYSTEM_TOTAL_MEMORY,
+				OCMessageConstants.SERVER_SUBDOMAIN, OCMessageConstants.SERVER_VERSION,
+				OCMessageConstants.SERVER_NAME, OCMessageConstants.SERVER_ADMIN_SERVICE_URL,
+				OCMessageConstants.SYSTEM_LOCAL_IP, OCMessageConstants.SERVER_START_TIME,
+				OCMessageConstants.SERVER_TIMESTAMP, OCMessageConstants.SERVER_PATCHES,
+				OCMessageConstants.SERVER_DOMAIN };
 
 		for (String key : keySequence) {
-			if (OCAgentConstants.SERVER_PATCHES.equals(key)) {
+			if (OCMessageConstants.SERVER_PATCHES.equals(key)) {
 				objList.add(" ");
 				continue;
 			}
@@ -121,14 +122,14 @@ public class BAMMessageUtil {
 		Map<String, Object> map = dataMap;
 		List<Object> objList = new ArrayList<Object>();
 		String keySequence[] = {
-				OCAgentConstants.SERVER_TIMESTAMP, OCAgentConstants.SYSTEM_USER_CPU_USAGE,
-				OCAgentConstants.SYSTEM_IDLE_CPU_USAGE, OCAgentConstants.SYSTEM_LOAD_AVERAGE,
-				OCAgentConstants.SERVER_TENANTS, OCAgentConstants.SERVER_THREAD_COUNT,
-				OCAgentConstants.SYSTEM_FREE_MEMORY, OCAgentConstants.SYSTEM_SYSTEM_CPU_USAGE,
-				OCAgentConstants.SERVER_UPTIME, OCAgentConstants.SERVER_ADMIN_SERVICE_URL };
+				OCMessageConstants.SERVER_TIMESTAMP, OCMessageConstants.SYSTEM_USER_CPU_USAGE,
+				OCMessageConstants.SYSTEM_IDLE_CPU_USAGE, OCMessageConstants.SYSTEM_LOAD_AVERAGE,
+				OCMessageConstants.SERVER_TENANTS, OCMessageConstants.SERVER_THREAD_COUNT,
+				OCMessageConstants.SYSTEM_FREE_MEMORY, OCMessageConstants.SYSTEM_SYSTEM_CPU_USAGE,
+				OCMessageConstants.SERVER_UPTIME, OCMessageConstants.SERVER_ADMIN_SERVICE_URL };
 
 		for (String key : keySequence) {
-			if (OCAgentConstants.SERVER_TENANTS.equals(key)) {
+			if (OCMessageConstants.SERVER_TENANTS.equals(key)) {
 				objList.add(" ");
 				continue;
 			}
@@ -186,29 +187,29 @@ public class BAMMessageUtil {
 
 		Map<String, Object> regDataMap = new HashMap<String, Object>();
 
-		regDataMap.put(OCAgentConstants.SYSTEM_LOCAL_IP,
+		regDataMap.put(OCMessageConstants.SYSTEM_LOCAL_IP,
 		               ocMessage.getLocalIp());
-		regDataMap.put(OCAgentConstants.SERVER_NAME, ocMessage.getServerName());
+		regDataMap.put(OCMessageConstants.SERVER_NAME, ocMessage.getServerName());
 		regDataMap
-				.put(OCAgentConstants.SERVER_VERSION, ocMessage.getServerVersion());
-		regDataMap.put(OCAgentConstants.SERVER_DOMAIN, ocMessage.getDomain());
-		regDataMap.put(OCAgentConstants.SERVER_SUBDOMAIN,
+				.put(OCMessageConstants.SERVER_VERSION, ocMessage.getServerVersion());
+		regDataMap.put(OCMessageConstants.SERVER_DOMAIN, ocMessage.getDomain());
+		regDataMap.put(OCMessageConstants.SERVER_SUBDOMAIN,
 		               ocMessage.getSubDomain());
-		regDataMap.put(OCAgentConstants.SERVER_ADMIN_SERVICE_URL,
+		regDataMap.put(OCMessageConstants.SERVER_ADMIN_SERVICE_URL,
 		               ocMessage.getAdminServiceUrl());
-		regDataMap.put(OCAgentConstants.SERVER_START_TIME,
+		regDataMap.put(OCMessageConstants.SERVER_START_TIME,
 		               ocMessage.getServerStartTime());
-		regDataMap.put(OCAgentConstants.SYSTEM_OS, ocMessage.getOs());
-		regDataMap.put(OCAgentConstants.SYSTEM_TOTAL_MEMORY,
+		regDataMap.put(OCMessageConstants.SYSTEM_OS, ocMessage.getOs());
+		regDataMap.put(OCMessageConstants.SYSTEM_TOTAL_MEMORY,
 		               ocMessage.getTotalMemory());
-		regDataMap.put(OCAgentConstants.SYSTEM_CPU_COUNT,
+		regDataMap.put(OCMessageConstants.SYSTEM_CPU_COUNT,
 		               ocMessage.getCpuCount());
-		regDataMap.put(OCAgentConstants.SYSTEM_CPU_SPEED,
+		regDataMap.put(OCMessageConstants.SYSTEM_CPU_SPEED,
 		               ocMessage.getCpuSpeed());
-		regDataMap.put(OCAgentConstants.SERVER_TIMESTAMP,
+		regDataMap.put(OCMessageConstants.SERVER_TIMESTAMP,
 		               ocMessage.getTimestamp());
 		regDataMap
-				.put(OCAgentConstants.SERVER_PATCHES, ocMessage.getPatches());
+				.put(OCMessageConstants.SERVER_PATCHES, ocMessage.getPatches());
 
 		return regDataMap;
 	}
@@ -221,23 +222,23 @@ public class BAMMessageUtil {
 	private static Map<String, Object> getBAMSynchronizationDataMap(OCMessage ocMessage) {
 		Map<String, Object> syncDataMap = new HashMap<String, Object>();
 
-		syncDataMap.put(OCAgentConstants.SERVER_TENANTS, ocMessage.getTenants());
-		syncDataMap.put(OCAgentConstants.SERVER_TIMESTAMP,
+		syncDataMap.put(OCMessageConstants.SERVER_TENANTS, ocMessage.getTenants());
+		syncDataMap.put(OCMessageConstants.SERVER_TIMESTAMP,
 		                ocMessage.getTimestamp());
-		syncDataMap.put(OCAgentConstants.SYSTEM_LOAD_AVERAGE,
+		syncDataMap.put(OCMessageConstants.SYSTEM_LOAD_AVERAGE,
 		                ocMessage.getSystemLoadAverage());
-		syncDataMap.put(OCAgentConstants.SERVER_THREAD_COUNT,
+		syncDataMap.put(OCMessageConstants.SERVER_THREAD_COUNT,
 		                ocMessage.getThreadCount());
-		syncDataMap.put(OCAgentConstants.SERVER_UPTIME, ocMessage.getServerUpTime());
-		syncDataMap.put(OCAgentConstants.SERVER_ADMIN_SERVICE_URL,
+		syncDataMap.put(OCMessageConstants.SERVER_UPTIME, ocMessage.getServerUpTime());
+		syncDataMap.put(OCMessageConstants.SERVER_ADMIN_SERVICE_URL,
 		                ocMessage.getAdminServiceUrl());
-		syncDataMap.put(OCAgentConstants.SYSTEM_USER_CPU_USAGE,
+		syncDataMap.put(OCMessageConstants.SYSTEM_USER_CPU_USAGE,
 		                ocMessage.getUserCpuUsage());
-		syncDataMap.put(OCAgentConstants.SYSTEM_SYSTEM_CPU_USAGE,
+		syncDataMap.put(OCMessageConstants.SYSTEM_SYSTEM_CPU_USAGE,
 		                ocMessage.getSystemCpuUsage());
-		syncDataMap.put(OCAgentConstants.SYSTEM_IDLE_CPU_USAGE,
+		syncDataMap.put(OCMessageConstants.SYSTEM_IDLE_CPU_USAGE,
 		                ocMessage.getIdleCpuUsage());
-		syncDataMap.put(OCAgentConstants.SYSTEM_FREE_MEMORY,
+		syncDataMap.put(OCMessageConstants.SYSTEM_FREE_MEMORY,
 		                ocMessage.getFreeMemory());
 
 

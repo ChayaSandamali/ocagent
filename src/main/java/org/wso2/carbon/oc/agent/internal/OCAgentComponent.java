@@ -69,21 +69,21 @@ public class OCAgentComponent {
 
 			//active publisher config map
 			for (OCPublisherConfiguration ocPublisherConfiguration : ocPublisherConfigurationList) {
-				OCDataPublisher ocDataPublisher = null;
+                    OCDataPublisher ocDataPublisher = null;
 
-				Class publisherClass = Class.forName(ocPublisherConfiguration.getClassPath());
+                    Class publisherClass = Class.forName(ocPublisherConfiguration.getClassPath());
 
-				ocDataPublisher = (OCDataPublisher) publisherClass.newInstance();
+                    ocDataPublisher = (OCDataPublisher) publisherClass.newInstance();
 
-				ocDataPublisher.init(ocPublisherConfiguration);
+                    ocDataPublisher.init(ocPublisherConfiguration);
 
-				OCAgentReporterTask ocAgentReporterTask
-						= new OCAgentReporterTask(ocDataPublisher);
+                    OCAgentReporterTask ocAgentReporterTask
+                            = new OCAgentReporterTask(ocDataPublisher);
 
-				reporterTaskExecutor.scheduleAtFixedRate(ocAgentReporterTask,
-				                                         0,
-				                                         ocDataPublisher.getInterval(),
-				                                         TimeUnit.MILLISECONDS);
+                    reporterTaskExecutor.scheduleAtFixedRate(ocAgentReporterTask,
+                                                             0,
+                                                             ocDataPublisher.getInterval(),
+                                                             TimeUnit.MILLISECONDS);
 			}
 
 		} catch (Throwable throwable) {

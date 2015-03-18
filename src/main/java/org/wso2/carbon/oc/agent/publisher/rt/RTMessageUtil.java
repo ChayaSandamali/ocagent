@@ -21,6 +21,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wso2.carbon.oc.agent.internal.OCAgentConstants;
 import org.wso2.carbon.oc.agent.message.OCMessage;
+import org.wso2.carbon.oc.agent.message.OCMessageConstants;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -46,27 +47,27 @@ public class RTMessageUtil {
 
 		Map<String, Object> syncDataMap = new HashMap<String, Object>();
 
-		syncDataMap.put(OCAgentConstants.SERVER_DOMAIN,
+		syncDataMap.put(OCMessageConstants.SERVER_DOMAIN,
 		                ocMessage.getDomain());
-		syncDataMap.put(OCAgentConstants.SERVER_TENANTS,
+		syncDataMap.put(OCMessageConstants.SERVER_TENANTS,
 		                ocMessage.getTenants());
-		syncDataMap.put(OCAgentConstants.SERVER_TIMESTAMP,
+		syncDataMap.put(OCMessageConstants.SERVER_TIMESTAMP,
 		            ocMessage.getTimestamp());
-		syncDataMap.put(OCAgentConstants.SYSTEM_LOAD_AVERAGE,
+		syncDataMap.put(OCMessageConstants.SYSTEM_LOAD_AVERAGE,
 		            ocMessage.getSystemLoadAverage());
-		syncDataMap.put(OCAgentConstants.SERVER_THREAD_COUNT,
+		syncDataMap.put(OCMessageConstants.SERVER_THREAD_COUNT,
 		            ocMessage.getThreadCount());
-		syncDataMap.put(OCAgentConstants.SERVER_UPTIME,
+		syncDataMap.put(OCMessageConstants.SERVER_UPTIME,
 		                ocMessage.getServerUpTime());
-		syncDataMap.put(OCAgentConstants.SERVER_ADMIN_SERVICE_URL,
+		syncDataMap.put(OCMessageConstants.SERVER_ADMIN_SERVICE_URL,
 		            ocMessage.getAdminServiceUrl());
-		syncDataMap.put(OCAgentConstants.SYSTEM_USER_CPU_USAGE,
+		syncDataMap.put(OCMessageConstants.SYSTEM_USER_CPU_USAGE,
 		            ocMessage.getUserCpuUsage());
-		syncDataMap.put(OCAgentConstants.SYSTEM_SYSTEM_CPU_USAGE,
+		syncDataMap.put(OCMessageConstants.SYSTEM_SYSTEM_CPU_USAGE,
 		            ocMessage.getSystemCpuUsage());
-		syncDataMap.put(OCAgentConstants.SYSTEM_IDLE_CPU_USAGE,
+		syncDataMap.put(OCMessageConstants.SYSTEM_IDLE_CPU_USAGE,
 		            ocMessage.getIdleCpuUsage());
-		syncDataMap.put(OCAgentConstants.SYSTEM_FREE_MEMORY,
+		syncDataMap.put(OCMessageConstants.SYSTEM_FREE_MEMORY,
 		            ocMessage.getFreeMemory());
 
 		String message = null;
@@ -90,27 +91,27 @@ public class RTMessageUtil {
 	static String getRegistrationRequestMessage(OCMessage ocMessage) {
 		Map<String, Object> regDataMap = new HashMap<String, Object>();
 
-		regDataMap.put(OCAgentConstants.SYSTEM_LOCAL_IP,
+		regDataMap.put(OCMessageConstants.SYSTEM_LOCAL_IP,
 		            ocMessage.getLocalIp());
-		regDataMap.put(OCAgentConstants.SERVER_NAME, ocMessage.getServerName());
-		regDataMap.put(OCAgentConstants.SERVER_VERSION, ocMessage.getServerVersion());
-		regDataMap.put(OCAgentConstants.SERVER_DOMAIN, ocMessage.getDomain());
-		regDataMap.put(OCAgentConstants.SERVER_SUBDOMAIN,
+		regDataMap.put(OCMessageConstants.SERVER_NAME, ocMessage.getServerName());
+		regDataMap.put(OCMessageConstants.SERVER_VERSION, ocMessage.getServerVersion());
+		regDataMap.put(OCMessageConstants.SERVER_DOMAIN, ocMessage.getDomain());
+		regDataMap.put(OCMessageConstants.SERVER_SUBDOMAIN,
 		            ocMessage.getSubDomain());
-		regDataMap.put(OCAgentConstants.SERVER_ADMIN_SERVICE_URL,
+		regDataMap.put(OCMessageConstants.SERVER_ADMIN_SERVICE_URL,
 		            ocMessage.getAdminServiceUrl());
-		regDataMap.put(OCAgentConstants.SERVER_START_TIME,
+		regDataMap.put(OCMessageConstants.SERVER_START_TIME,
 		            ocMessage.getServerStartTime());
-		regDataMap.put(OCAgentConstants.SYSTEM_OS, ocMessage.getOs());
-		regDataMap.put(OCAgentConstants.SYSTEM_TOTAL_MEMORY,
+		regDataMap.put(OCMessageConstants.SYSTEM_OS, ocMessage.getOs());
+		regDataMap.put(OCMessageConstants.SYSTEM_TOTAL_MEMORY,
 		            ocMessage.getTotalMemory());
-		regDataMap.put(OCAgentConstants.SYSTEM_CPU_COUNT,
+		regDataMap.put(OCMessageConstants.SYSTEM_CPU_COUNT,
 		            ocMessage.getCpuCount());
-		regDataMap.put(OCAgentConstants.SYSTEM_CPU_SPEED,
+		regDataMap.put(OCMessageConstants.SYSTEM_CPU_SPEED,
 		            ocMessage.getCpuSpeed());
-		regDataMap.put(OCAgentConstants.SERVER_TIMESTAMP,
+		regDataMap.put(OCMessageConstants.SERVER_TIMESTAMP,
 		            ocMessage.getTimestamp());
-		regDataMap.put(OCAgentConstants.SERVER_PATCHES, ocMessage.getPatches());
+		regDataMap.put(OCMessageConstants.SERVER_PATCHES, ocMessage.getPatches());
 
 		String message = null;
 
