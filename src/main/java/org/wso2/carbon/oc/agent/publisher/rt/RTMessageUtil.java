@@ -77,7 +77,7 @@ public class RTMessageUtil {
 					.writeValueAsString(syncDataMap);
 
 		} catch (IOException e) {
-			logger.error("Failed to get JSON String from ocSynchronizationRequest", e);
+			logger.info("Failed to get JSON String from ocSynchronizationRequest", e);
 		}
 		return message;
 	}
@@ -120,7 +120,7 @@ public class RTMessageUtil {
 					.writeValueAsString(regDataMap);
 
 		} catch (IOException e) {
-			logger.error("Failed to get JSON String from ocRegistrationRequest", e);
+			logger.info("Failed to get JSON String from ocRegistrationRequest", e);
 		}
 		return message;
 	}

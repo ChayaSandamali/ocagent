@@ -60,9 +60,9 @@ public class OCAgentUtils {
 					OCAgentConstants.OC_XML));
 			publishers = oc.getOcPublishers();
 		} catch (JAXBException e) {
-			logger.error(e.getMessage(), e);
+			logger.info(e.getMessage(), e);
 		} catch (FileNotFoundException e) {
-			logger.error(OCAgentConstants.OC_XML + " is missing in this path", e);
+			logger.info(OCAgentConstants.OC_XML + " is missing in this path", e);
 		}
 
 		return publishers;
@@ -86,13 +86,13 @@ public class OCAgentUtils {
 				} else if (GRACEFUL_SHUTDOWN.equals(command)) {
 					serverAdmin.shutdownGracefully();
 				} else {
-					logger.error("Unknown command received. [" + command + "]");
+					logger.info("Unknown command received. [" + command + "]");
 				}
 			} catch (Exception e) {
-				logger.error("Failed while executing command. [" + command + "]", e);
+				logger.info("Failed while executing command. [" + command + "]", e);
 			}
 		} else {
-			logger.error("Unable to perform action, ServerAdmin is null");
+			logger.info("Unable to perform action, ServerAdmin is null");
 		}
 	}
 }

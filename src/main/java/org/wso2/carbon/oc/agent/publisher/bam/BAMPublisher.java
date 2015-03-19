@@ -65,13 +65,13 @@ public class BAMPublisher implements OCDataPublisher {
 			}
 
 		} catch (MalformedURLException e) {
-			logger.error(e.getMessage(), e);
+			logger.info(e.getMessage(), e);
 		} catch (AgentException e) {
-			logger.error("BAMPublisher connection down", e);
+			logger.info("BAMPublisher connection down", e);
 		} catch (AuthenticationException e) {
-			logger.error(e.getMessage(), e);
+			logger.info(e.getMessage(), e);
 		} catch (TransportException e) {
-			logger.error(e.getMessage(), e);
+			logger.info(e.getMessage(), e);
 		}
 		logger.info("BAMPublisher init done");
 	}
@@ -86,11 +86,11 @@ public class BAMPublisher implements OCDataPublisher {
 		try {
 			streamId = dataPublisher.defineStream(streamDef);
 		} catch (MalformedStreamDefinitionException e) {
-			logger.error(e.getMessage(), e);
+			logger.info(e.getMessage(), e);
 		} catch (StreamDefinitionException e) {
-			logger.error(e.getMessage(), e);
+			logger.info(e.getMessage(), e);
 		} catch (DifferentStreamDefinitionAlreadyDefinedException e) {
-			logger.error(e.getMessage(), e);
+			logger.info(e.getMessage(), e);
 		}
 
 		return streamId;

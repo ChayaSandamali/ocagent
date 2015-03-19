@@ -118,7 +118,7 @@ public class OCAgentDataExtractor {
 			try {
 				return serverAdmin.getServerVersion();
 			} catch (Exception e) {
-				logger.error("Failed to retrieve server version.", e);
+				logger.info("Failed to retrieve server version.", e);
 			}
 		}
 		return "Undefined";
@@ -241,7 +241,7 @@ public class OCAgentDataExtractor {
 				stringBuilder.append("s");
 				return stringBuilder.toString();
 			} catch (Exception e) {
-				logger.error("Failed to retrieve server up time.", e);
+				logger.info("Failed to retrieve server up time.", e);
 			}
 		}
 		return "Undefined";
@@ -254,7 +254,7 @@ public class OCAgentDataExtractor {
 			try {
 				return serverAdmin.getServerData().getServerStartTime();
 			} catch (Exception e) {
-				logger.error("Failed to retrieve server up time.", e);
+				logger.info("Failed to retrieve server up time.", e);
 			}
 		}
 		return "Undefined";
@@ -290,7 +290,7 @@ public class OCAgentDataExtractor {
 				tenantBeanList.add(tenantBean);
 			}
 		} catch (UserStoreException e) {
-			logger.error("Failed to retrieve all tenants", e);
+			logger.info("Failed to retrieve all tenants", e);
 		}
 		return tenantBeanList;
 	}
@@ -343,7 +343,7 @@ public class OCAgentDataExtractor {
 			ocMessage.setTimestamp(timestamp);
 
 		} catch (ParameterUnavailableException e) {
-			logger.error("Failed to read oc data parameters. ", e);
+			logger.info("Failed to read oc data parameters. ", e);
 		}
 
 		return ocMessage;

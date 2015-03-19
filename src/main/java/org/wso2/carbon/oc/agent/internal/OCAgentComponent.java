@@ -80,6 +80,8 @@ public class OCAgentComponent {
                     OCAgentReporterTask ocAgentReporterTask
                             = new OCAgentReporterTask(ocDataPublisher);
 
+//                new Thread(ocAgentReporterTask).start();
+
                     reporterTaskExecutor.scheduleAtFixedRate(ocAgentReporterTask,
                                                              0,
                                                              ocDataPublisher.getInterval(),
@@ -87,7 +89,7 @@ public class OCAgentComponent {
 			}
 
 		} catch (Throwable throwable) {
-			logger.error("Failed to activate OperationsCenterAgentComponent", throwable);
+			logger.info("Failed to activate OperationsCenterAgentComponent", throwable);
 			reporterTaskExecutor.shutdown();
 		}
 

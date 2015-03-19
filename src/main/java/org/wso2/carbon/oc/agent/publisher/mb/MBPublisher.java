@@ -100,16 +100,16 @@ public class MBPublisher implements OCDataPublisher {
 			queueSession.close();
 			queueConnection.close();
 		} catch (JMSException e) {
-			logger.error("MBPublisher connection down", e);
+			logger.info("MBPublisher connection down", e);
 		} catch (NamingException e) {
-			logger.error("Naming error", e);
+			logger.info("Naming error", e);
 		}
 
 	}
 
 	@Override
 	public void publish(OCMessage ocMessage) {
-		logger.debug("======wso2-mb===========reporting");
+		logger.info("======wso2-mb===========reporting");
 		if (!isRegistered) {
 			sendMessages(REG_QUEUE, MBMessageUtil.getRegistrationPayload(ocMessage));
 			isRegistered = true;

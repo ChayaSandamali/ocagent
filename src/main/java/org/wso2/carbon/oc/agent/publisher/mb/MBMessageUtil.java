@@ -85,7 +85,7 @@ public class MBMessageUtil {
 			message = objectMapper.writeValueAsString(root);
 
 		} catch (IOException e) {
-			logger.error("Failed to get JSON String from ocSynchronizationRequest", e);
+			logger.info("Failed to get JSON String from ocSynchronizationRequest", e);
 		}
 		return message;
 	}
@@ -134,7 +134,7 @@ public class MBMessageUtil {
 			message = objectMapper.writeValueAsString(root);
 
 		} catch (IOException e) {
-			logger.error("Failed to get JSON String from ocSynchronizationRequest", e);
+			logger.info("Failed to get JSON String from ocSynchronizationRequest", e);
 		}
 
 		return message;

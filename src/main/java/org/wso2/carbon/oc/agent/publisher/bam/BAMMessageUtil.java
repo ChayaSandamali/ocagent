@@ -171,7 +171,7 @@ public class BAMMessageUtil {
 		try {
 			jsonStr = objectMapper.writeValueAsString(resultMapList);
 		} catch (IOException e) {
-			logger.error("Cannot convert the payload definition", e);
+			logger.info("Cannot convert the payload definition", e);
 		}
 		jsonStr = jsonStr.replaceAll("\\[|\\]", "");
 

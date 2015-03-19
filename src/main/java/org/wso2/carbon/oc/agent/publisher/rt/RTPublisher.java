@@ -63,7 +63,8 @@ public class RTPublisher implements OCDataPublisher {
 	private String ocUrl;
 	private long interval;
 
-	@Override public void init(OCPublisherConfiguration ocPublisherConfiguration) {
+	@Override
+    public void init(OCPublisherConfiguration ocPublisherConfiguration) {
 		// get set config
 		Map<String, String> configMap = ocPublisherConfiguration.getOcPublisherProperties().getPropertyMap();
 
@@ -86,9 +87,8 @@ public class RTPublisher implements OCDataPublisher {
 
 	}
 
-	@Override
 	public void publish(OCMessage ocMessage) {
-		logger.debug("======real-time===========reporting");
+		logger.info("======real-time===========reporting");
 
 		if (!isRegistered) {
 			register(ocMessage);
@@ -111,7 +111,7 @@ public class RTPublisher implements OCDataPublisher {
 			responseBody =
 					sendPostRequest(ocUrl + REGISTRATION_PATH, jsonString, HttpStatus.SC_CREATED);
 		} catch (IOException e) {
-			logger.error("RTPublisher connection down while registering: ", e);
+			logger.info("RTPublisher connection down while registering: ", e);
 			isRegistered = false;
 		}
 
@@ -130,7 +130,7 @@ public class RTPublisher implements OCDataPublisher {
 
 				isRegistered = true;
 			} catch (IOException e) {
-				logger.error("Failed to read values from RegistrationResponse", e);
+				logger.info("Failed to read values from RegistrationResponse", e);
 				isRegistered = false;
 			}
 		}
@@ -150,7 +150,7 @@ public class RTPublisher implements OCDataPublisher {
 			responseBody =
 					sendPutRequest(ocUrl + SYNCHRONIZATION_PATH + serverId, jsonString, HttpStatus.SC_OK);
 		} catch (IOException e) {
-			logger.error("RTPublisher connection down while sync messaging: ", e);
+			logger.info("RTPublisher connection down while sync messaging: ", e);
 			isRegistered = false;
 		}
 
@@ -164,7 +164,7 @@ public class RTPublisher implements OCDataPublisher {
 
 				isRegistered = true;
 			} catch (IOException e) {
-				logger.error("Failed to read values from SynchronizationResponse", e);
+				logger.info("Failed to read values from SynchronizationResponse", e);
 				isRegistered = false;
 				return;
 			}
@@ -172,11 +172,11 @@ public class RTPublisher implements OCDataPublisher {
 			if (synResMap != null) {
 				for(String command : synResMap) {
 					OCAgentUtils.performAction(command);
-					logger.debug("Executing command. [Command:" + command + "]");
+					logger.info("Executing command. [Command:" + command + "]");
 				}
 
 			} else {
-				logger.error("Unable receive JSON synchronization response.");
+				logger.info("Unable receive JSON synchronization response.");
 			}
 		}
 	}
@@ -206,10 +206,10 @@ public class RTPublisher implements OCDataPublisher {
 					}
 					return responseBody;
 				} else {
-					logger.error("Request failed with status Code : " + statusCode);
+					logger.info("Request failed with status Code : " + statusCode);
 				}
 		} catch (UnsupportedEncodingException e) {
-			logger.error("Failed to register with Operations Center", e);
+			logger.info("Failed to register with Operations Center", e);
 		} finally {
 			postMethod.releaseConnection();
 		}
@@ -241,12 +241,12 @@ public class RTPublisher implements OCDataPublisher {
 				}
 				return responseBody;
 			} else {
-				logger.error("Request failed with status Code : " + statusCode);
+				logger.info("Request failed with status Code : " + statusCode);
 				throw new IOException();
 			}
 
 		} catch (UnsupportedEncodingException e) {
-			logger.error("Failed to sync data with Operations Center", e);
+			logger.info("Failed to sync data with Operations Center", e);
 		} finally {
 			putMethod.releaseConnection();
 		}
