@@ -16,13 +16,13 @@
 
 package org.wso2.carbon.oc.agent.publisher.bam;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.wso2.carbon.databridge.agent.thrift.DataPublisher;
 import org.wso2.carbon.databridge.agent.thrift.exception.AgentException;
 import org.wso2.carbon.databridge.commons.exception.*;
-import org.wso2.carbon.oc.agent.model.OCPublisherConfiguration;
 import org.wso2.carbon.oc.agent.message.OCMessage;
+import org.wso2.carbon.oc.agent.model.OCPublisherConfiguration;
 import org.wso2.carbon.oc.agent.publisher.OCDataPublisher;
 import org.wso2.carbon.utils.CarbonUtils;
 
@@ -34,82 +34,82 @@ import java.util.Map;
  */
 public class BAMPublisher implements OCDataPublisher {
 
-	static Logger logger = LoggerFactory.getLogger(BAMPublisher.class);
-	private static DataPublisher dataPublisher = null;
-	//config attributes
-	private String username;
-	private String password;
-	private String defaultHostName;
-	private String thriftPort;
-	private long interval;
-	private boolean isRegistered = false;
+    private static final Log logger = LogFactory.getLog(BAMPublisher.class);
+    private static DataPublisher dataPublisher = null;
+    //config attributes
+    private String username;
+    private String password;
+    private String defaultHostName;
+    private String thriftPort;
+    private long interval;
+    private boolean isRegistered = false;
 
-	@Override public void init(OCPublisherConfiguration ocPublisherConfiguration) {
-		//load xml config
-		Map<String, String> configMap = ocPublisherConfiguration.getOcPublisherProperties().getPropertyMap();
+    @Override
+    public void init(OCPublisherConfiguration ocPublisherConfiguration) {
+        //load xml config
+        Map<String, String> configMap = ocPublisherConfiguration.getOcPublisherProperties().getPropertyMap();
 
-		this.username = configMap.get(BAMConstants.USERNAME);
-		this.password = configMap.get(BAMConstants.PASSWORD);
-		this.defaultHostName = configMap.get(BAMConstants.REPORT_HOST_NAME);
-		this.thriftPort = configMap.get(BAMConstants.THRIFT_PORT);
-		this.interval = Long.parseLong(configMap.get(BAMConstants.INTERVAL));
+        this.username = configMap.get(BAMConstants.USERNAME);
+        this.password = configMap.get(BAMConstants.PASSWORD);
+        this.defaultHostName = configMap.get(BAMConstants.REPORT_HOST_NAME);
+        this.thriftPort = configMap.get(BAMConstants.THRIFT_PORT);
+        this.interval = Long.parseLong(configMap.get(BAMConstants.INTERVAL));
 
-		try {
-			synchronized (BAMPublisher.class) {
-				if (dataPublisher == null) {
-					setTrustStoreParams();
-					dataPublisher = new DataPublisher("tcp://" + defaultHostName + ":" + thriftPort,
-					                                  username, password);
-				}
+        try {
+            synchronized (BAMPublisher.class) {
+                if (dataPublisher == null) {
+                    setTrustStoreParams();
+                    dataPublisher = new DataPublisher("tcp://" + defaultHostName + ":" + thriftPort,
+                            username, password);
+                }
 
-			}
+            }
 
-		} catch (MalformedURLException e) {
-			logger.info(e.getMessage(), e);
-		} catch (AgentException e) {
-			logger.info("BAMPublisher connection down", e);
-		} catch (AuthenticationException e) {
-			logger.info(e.getMessage(), e);
-		} catch (TransportException e) {
-			logger.info(e.getMessage(), e);
-		}
-		logger.info("BAMPublisher init done");
-	}
+        } catch (MalformedURLException e) {
+            logger.error(e.getMessage(), e);
+        } catch (AgentException e) {
+            logger.error("BAMPublisher connection down", e);
+        } catch (AuthenticationException e) {
+            logger.error(e.getMessage(), e);
+        } catch (TransportException e) {
+            logger.error(e.getMessage(), e);
+        }
+        logger.info("BAMPublisher init done");
+    }
 
-	/**
-	 * @param streamDef - stream definition json string event > payload
-	 * @return String - unique generated stream id
-	 */
-	private String getStreamId(String streamDef) throws AgentException {
-		String streamId = null;
+    /**
+     * @param streamDef - stream definition json string event > payload
+     * @return String - unique generated stream id
+     */
+    private String getStreamId(String streamDef) throws AgentException {
+        String streamId = null;
 
-		try {
-			streamId = dataPublisher.defineStream(streamDef);
-		} catch (MalformedStreamDefinitionException e) {
-			logger.info(e.getMessage(), e);
-		} catch (StreamDefinitionException e) {
-			logger.info(e.getMessage(), e);
-		} catch (DifferentStreamDefinitionAlreadyDefinedException e) {
-			logger.info(e.getMessage(), e);
-		}
+        try {
+            streamId = dataPublisher.defineStream(streamDef);
+        } catch (MalformedStreamDefinitionException e) {
+            logger.error(e.getMessage(), e);
+        } catch (StreamDefinitionException e) {
+            logger.error(e.getMessage(), e);
+        } catch (DifferentStreamDefinitionAlreadyDefinedException e) {
+            logger.error(e.getMessage(), e);
+        }
 
-		return streamId;
-	}
+        return streamId;
+    }
 
 
+    private void setTrustStoreParams() {
+        System.setProperty("javax.net.ssl.trustStore",
+                CarbonUtils.getCarbonHome() + "/repository/resources/security" +
+                        "/client-truststore.jks");
+        System.setProperty("javax.net.ssl.trustStorePassword", "wso2carbon");
+    }
 
-	private void setTrustStoreParams() {
-		System.setProperty("javax.net.ssl.trustStore",
-		                   CarbonUtils.getCarbonHome() + "/repository/resources/security" +
-		                   "/client-truststore.jks");
-		System.setProperty("javax.net.ssl.trustStorePassword", "wso2carbon");
-	}
+    @Override
+    public void publish(OCMessage ocMessage) {
 
-	@Override
-	public void publish(OCMessage ocMessage) {
-
-		/*logger.info("==========wso2-bam==========reporting");
-		try {
+		/*logger.debug("==========wso2-bam==========reporting");
+        try {
 
 			if (!isRegistered) {
 				dataPublisher.publish(getStreamId(BAMMessageUtil.getRegisterStreamDef(ocMessage)), null, null,
@@ -123,22 +123,22 @@ public class BAMPublisher implements OCDataPublisher {
 			}
 
 		} catch (AgentException e) {
-			logger.info("BAMPublisher connection down", e);
+			logger.error("BAMPublisher connection down", e);
 		}*/
 
-		//		logger.info(getSynchronizeStreamDef(dataExtractor));
-		//		logger.info(getRegisterStreamDef(dataExtractor));
-	}
+        //		logger.info(getSynchronizeStreamDef(dataExtractor));
+        //		logger.info(getRegisterStreamDef(dataExtractor));
+    }
 
-	/**
-	 * stop bam publisher
-	 */
-	public void stop() {
-		dataPublisher.stop();
-	}
+    /**
+     * stop bam publisher
+     */
+    public void stop() {
+        dataPublisher.stop();
+    }
 
-	@Override
-	public long getInterval() {
-		return interval;
-	}
+    @Override
+    public long getInterval() {
+        return interval;
+    }
 }

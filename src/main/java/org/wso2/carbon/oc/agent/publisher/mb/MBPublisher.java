@@ -16,10 +16,10 @@
 
 package org.wso2.carbon.oc.agent.publisher.mb;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.wso2.carbon.oc.agent.model.OCPublisherConfiguration;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.wso2.carbon.oc.agent.message.OCMessage;
+import org.wso2.carbon.oc.agent.model.OCPublisherConfiguration;
 import org.wso2.carbon.oc.agent.publisher.OCDataPublisher;
 
 import javax.jms.*;
@@ -34,109 +34,110 @@ import java.util.Properties;
  */
 public class MBPublisher implements OCDataPublisher {
 
-	// mb queue names
-	private static final String REG_QUEUE = "RegisterRequest";
-	private static final String SYNC_QUEUE = "UpdateRequest";
-	// mb conf
-	private static final String QPID_ICF =
-			"org.wso2.andes.jndi.PropertiesFileInitialContextFactory";
-	private static final String CF_NAME_PREFIX = "connectionfactory.";
-	private static final String QUEUE_NAME_PREFIX = "queue.";
-	private static final String CF_NAME = "qpidConnectionfactory";
-	private static Logger logger = LoggerFactory.getLogger(MBPublisher.class);
-	private static String CARBON_CLIENT_ID = "carbon";
-	private static String CARBON_VIRTUAL_HOST_NAME = "carbon";
+    // mb queue names
+    private static final String REG_QUEUE = "RegisterRequest";
+    private static final String SYNC_QUEUE = "UpdateRequest";
+    // mb conf
+    private static final String QPID_ICF =
+            "org.wso2.andes.jndi.PropertiesFileInitialContextFactory";
+    private static final String CF_NAME_PREFIX = "connectionfactory.";
+    private static final String QUEUE_NAME_PREFIX = "queue.";
+    private static final String CF_NAME = "qpidConnectionfactory";
+    private static final Log logger = LogFactory.getLog(MBPublisher.class);
+    private static String CARBON_CLIENT_ID = "carbon";
+    private static String CARBON_VIRTUAL_HOST_NAME = "carbon";
 
-	// load from carbon.xml
-	private String defaultHostName;
-	private String defaultPort;
-	private String username;
-	private String password;
-	private long interval;
+    // load from carbon.xml
+    private String defaultHostName;
+    private String defaultPort;
+    private String username;
+    private String password;
+    private long interval;
 
-	private boolean isRegistered = false;
+    private boolean isRegistered = false;
 
-	@Override public void init(OCPublisherConfiguration ocPublisherConfiguration) {
-		//get set config
-		Map<String, String> configMap = ocPublisherConfiguration.getOcPublisherProperties().getPropertyMap();
+    @Override
+    public void init(OCPublisherConfiguration ocPublisherConfiguration) {
+        //get set config
+        Map<String, String> configMap = ocPublisherConfiguration.getOcPublisherProperties().getPropertyMap();
 
-		this.username = configMap.get(MBConstants.USERNAME);
-		this.password = configMap.get(MBConstants.PASSWORD);
-		this.defaultHostName =
-				configMap.get(MBConstants.REPORT_HOST_NAME);
-		this.defaultPort = configMap.get(MBConstants.REPORT_PORT);
+        this.username = configMap.get(MBConstants.USERNAME);
+        this.password = configMap.get(MBConstants.PASSWORD);
+        this.defaultHostName =
+                configMap.get(MBConstants.REPORT_HOST_NAME);
+        this.defaultPort = configMap.get(MBConstants.REPORT_PORT);
 
-		this.interval =
-				Long.parseLong(configMap.get(MBConstants.INTERVAL));
-		logger.info("MBPublisher init done");
-	}
+        this.interval =
+                Long.parseLong(configMap.get(MBConstants.INTERVAL));
+        logger.info("MBPublisher init done");
+    }
 
-	/**
-	 * @param queueName   - String mb queue name
-	 * @param jsonMessage - String mb queue message json string
-	 */
-	public void sendMessages(String queueName, String jsonMessage) {
+    /**
+     * @param queueName   - String mb queue name
+     * @param jsonMessage - String mb queue message json string
+     */
+    public void sendMessages(String queueName, String jsonMessage) {
 
-		try {
-			Properties properties = new Properties();
-			properties.put(Context.INITIAL_CONTEXT_FACTORY, QPID_ICF);
-			properties.put(CF_NAME_PREFIX + CF_NAME, getTCPConnectionURL(username, password));
-			properties.put(QUEUE_NAME_PREFIX + queueName, queueName);
-			InitialContext ctx = new InitialContext(properties);
-			// lookup connection factory
-			QueueConnectionFactory connFactory = (QueueConnectionFactory) ctx.lookup(CF_NAME);
-			QueueConnection queueConnection = connFactory.createQueueConnection();
-			queueConnection.start();
-			QueueSession queueSession =
-					queueConnection.createQueueSession(false, QueueSession.AUTO_ACKNOWLEDGE);
-			// send message
-			Queue queue = (Queue) ctx.lookup(queueName);
-			// create the message to send
+        try {
+            Properties properties = new Properties();
+            properties.put(Context.INITIAL_CONTEXT_FACTORY, QPID_ICF);
+            properties.put(CF_NAME_PREFIX + CF_NAME, getTCPConnectionURL(username, password));
+            properties.put(QUEUE_NAME_PREFIX + queueName, queueName);
+            InitialContext ctx = new InitialContext(properties);
+            // lookup connection factory
+            QueueConnectionFactory connFactory = (QueueConnectionFactory) ctx.lookup(CF_NAME);
+            QueueConnection queueConnection = connFactory.createQueueConnection();
+            queueConnection.start();
+            QueueSession queueSession =
+                    queueConnection.createQueueSession(false, QueueSession.AUTO_ACKNOWLEDGE);
+            // send message
+            Queue queue = (Queue) ctx.lookup(queueName);
+            // create the message to send
 
-			TextMessage textMessage = queueSession.createTextMessage(jsonMessage);
-			QueueSender queueSender = queueSession.createSender(queue);
-			queueSender.send(textMessage);
-			queueSender.close();
-			queueSession.close();
-			queueConnection.close();
-		} catch (JMSException e) {
-			logger.info("MBPublisher connection down", e);
-		} catch (NamingException e) {
-			logger.info("Naming error", e);
-		}
+            TextMessage textMessage = queueSession.createTextMessage(jsonMessage);
+            QueueSender queueSender = queueSession.createSender(queue);
+            queueSender.send(textMessage);
+            queueSender.close();
+            queueSession.close();
+            queueConnection.close();
+        } catch (JMSException e) {
+            logger.error("MBPublisher connection down", e);
+        } catch (NamingException e) {
+            logger.error("Naming error", e);
+        }
 
-	}
+    }
 
-	@Override
-	public void publish(OCMessage ocMessage) {
-		logger.info("======wso2-mb===========reporting");
-		if (!isRegistered) {
-			sendMessages(REG_QUEUE, MBMessageUtil.getRegistrationPayload(ocMessage));
-			isRegistered = true;
-		} else {
-			sendMessages(SYNC_QUEUE, MBMessageUtil.getSynchronizationPayload(ocMessage));
-		}
+    @Override
+    public void publish(OCMessage ocMessage) {
+        logger.debug("======wso2-mb===========reporting");
+        if (!isRegistered) {
+            sendMessages(REG_QUEUE, MBMessageUtil.getRegistrationPayload(ocMessage));
+            isRegistered = true;
+        } else {
+            sendMessages(SYNC_QUEUE, MBMessageUtil.getSynchronizationPayload(ocMessage));
+        }
 
-	}
+    }
 
-	@Override
-	public long getInterval() {
-		return interval;
-	}
+    @Override
+    public long getInterval() {
+        return interval;
+    }
 
-	/**
-	 * @param username
-	 * @param password
-	 * @return String - conn url
-	 */
-	public String getTCPConnectionURL(String username, String password) {
-		// amqp://{username}:{password}@carbon/carbon?brokerlist='tcp://{hostname}:{port}'
-		return new StringBuffer()
-				.append("amqp://").append(username).append(":").append(password)
-				.append("@").append(CARBON_CLIENT_ID)
-				.append("/").append(CARBON_VIRTUAL_HOST_NAME)
-				.append("?brokerlist='tcp://").append(defaultHostName).append(":")
-				.append(defaultPort).append("'")
-				.toString();
-	}
+    /**
+     * @param username
+     * @param password
+     * @return String - conn url
+     */
+    public String getTCPConnectionURL(String username, String password) {
+        // amqp://{username}:{password}@carbon/carbon?brokerlist='tcp://{hostname}:{port}'
+        return new StringBuffer()
+                .append("amqp://").append(username).append(":").append(password)
+                .append("@").append(CARBON_CLIENT_ID)
+                .append("/").append(CARBON_VIRTUAL_HOST_NAME)
+                .append("?brokerlist='tcp://").append(defaultHostName).append(":")
+                .append(defaultPort).append("'")
+                .toString();
+    }
 }

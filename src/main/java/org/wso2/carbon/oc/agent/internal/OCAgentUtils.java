@@ -16,6 +16,8 @@
 
 package org.wso2.carbon.oc.agent.internal;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wso2.carbon.oc.agent.model.OCConfiguration;
@@ -39,7 +41,7 @@ public class OCAgentUtils {
 	private static final String FORCE_RESTART = "FORCE_RESTART";
 	private static final String GRACEFUL_SHUTDOWN = "GRACEFUL_SHUTDOWN";
 	private static final String GRACEFUL_RESTART = "GRACEFUL_RESTART";
-	private static Logger logger = LoggerFactory.getLogger(OCAgentUtils.class);
+    private static final Log logger = LogFactory.getLog(OCAgentUtils.class);
 
 	private OCAgentUtils() {
 	}
@@ -60,9 +62,9 @@ public class OCAgentUtils {
 					OCAgentConstants.OC_XML));
 			publishers = oc.getOcPublishers();
 		} catch (JAXBException e) {
-			logger.info(e.getMessage(), e);
+			logger.error(e.getMessage(), e);
 		} catch (FileNotFoundException e) {
-			logger.info(OCAgentConstants.OC_XML + " is missing in this path", e);
+			logger.error(OCAgentConstants.OC_XML + " is missing in this path", e);
 		}
 
 		return publishers;
@@ -86,13 +88,13 @@ public class OCAgentUtils {
 				} else if (GRACEFUL_SHUTDOWN.equals(command)) {
 					serverAdmin.shutdownGracefully();
 				} else {
-					logger.info("Unknown command received. [" + command + "]");
+					logger.debug("Unknown command received. [" + command + "]");
 				}
 			} catch (Exception e) {
-				logger.info("Failed while executing command. [" + command + "]", e);
+				logger.error("Failed while executing command. [" + command + "]", e);
 			}
 		} else {
-			logger.info("Unable to perform action, ServerAdmin is null");
+			logger.error("Unable to perform action, ServerAdmin is null");
 		}
 	}
 }

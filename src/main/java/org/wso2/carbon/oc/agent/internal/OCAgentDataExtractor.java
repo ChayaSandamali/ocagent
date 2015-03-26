@@ -20,6 +20,8 @@ import com.jezhumble.javasysmon.JavaSysMon;
 import org.apache.axiom.om.OMElement;
 import org.apache.axis2.clustering.ClusteringAgent;
 import org.apache.axis2.description.Parameter;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wso2.carbon.base.api.ServerConfigurationService;
@@ -59,7 +61,7 @@ public class OCAgentDataExtractor {
 	private static final String PATCH = "patch";
 	private static OCAgentDataExtractor instance =
 			new OCAgentDataExtractor();
-	private static Logger logger = LoggerFactory.getLogger(OCAgentDataExtractor.class);
+    private static final Log logger = LogFactory.getLog(OCAgentDataExtractor.class);
 	private static OCMessage ocMessage;
 	private JavaSysMon javaSysMon = new JavaSysMon();
 	private String os;
@@ -118,7 +120,7 @@ public class OCAgentDataExtractor {
 			try {
 				return serverAdmin.getServerVersion();
 			} catch (Exception e) {
-				logger.info("Failed to retrieve server version.", e);
+				logger.error("Failed to retrieve server version.", e);
 			}
 		}
 		return "Undefined";
@@ -241,7 +243,7 @@ public class OCAgentDataExtractor {
 				stringBuilder.append("s");
 				return stringBuilder.toString();
 			} catch (Exception e) {
-				logger.info("Failed to retrieve server up time.", e);
+				logger.error("Failed to retrieve server up time.", e);
 			}
 		}
 		return "Undefined";
@@ -254,7 +256,7 @@ public class OCAgentDataExtractor {
 			try {
 				return serverAdmin.getServerData().getServerStartTime();
 			} catch (Exception e) {
-				logger.info("Failed to retrieve server up time.", e);
+				logger.error("Failed to retrieve server up time.", e);
 			}
 		}
 		return "Undefined";
@@ -290,7 +292,7 @@ public class OCAgentDataExtractor {
 				tenantBeanList.add(tenantBean);
 			}
 		} catch (UserStoreException e) {
-			logger.info("Failed to retrieve all tenants", e);
+			logger.error("Failed to retrieve all tenants", e);
 		}
 		return tenantBeanList;
 	}
@@ -343,7 +345,7 @@ public class OCAgentDataExtractor {
 			ocMessage.setTimestamp(timestamp);
 
 		} catch (ParameterUnavailableException e) {
-			logger.info("Failed to read oc data parameters. ", e);
+			logger.error("Failed to read oc data parameters. ", e);
 		}
 
 		return ocMessage;

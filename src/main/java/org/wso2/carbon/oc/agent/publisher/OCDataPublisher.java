@@ -16,28 +16,29 @@
 
 package org.wso2.carbon.oc.agent.publisher;
 
-import org.wso2.carbon.oc.agent.model.OCPublisherConfiguration;
 import org.wso2.carbon.oc.agent.message.OCMessage;
+import org.wso2.carbon.oc.agent.model.OCPublisherConfiguration;
 
 /**
  *
  */
 public interface OCDataPublisher {
 
-	/**
-	 * @param ocPublisherConfiguration - operations-center.xml data OCPublisher object
-	 */
-	void init(OCPublisherConfiguration ocPublisherConfiguration);
+    /**
+     * @param ocPublisherConfiguration - operations-center.xml data OCPublisher object
+     */
+    void init(OCPublisherConfiguration ocPublisherConfiguration);
 
-	/**
-	 * publish data to endpoint/resource
-	 * @param ocMessage  - oc data as object
-	 */
-	void publish(OCMessage ocMessage);
+    /**
+     * publish data to endpoint/resource
+     *
+     * @param ocMessage - oc data as object
+     */
+    void publish(OCMessage ocMessage);
 
-	/**
-	 * @return interval time milli-seconds - periodical data publishing time
-	 */
-	long getInterval();
+    /**
+     * @return interval time milli-seconds - periodical data publishing time
+     */
+    long getInterval();
 
 }

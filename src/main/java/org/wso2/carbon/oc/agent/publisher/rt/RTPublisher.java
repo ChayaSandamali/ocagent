@@ -26,16 +26,14 @@ import org.apache.commons.httpclient.methods.PutMethod;
 import org.apache.commons.httpclient.methods.RequestEntity;
 import org.apache.commons.httpclient.methods.StringRequestEntity;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.type.TypeReference;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.wso2.carbon.oc.agent.internal.OCAgentConstants;
-import org.wso2.carbon.oc.agent.internal.OCAgentDataExtractor;
 import org.wso2.carbon.oc.agent.internal.OCAgentUtils;
+import org.wso2.carbon.oc.agent.message.OCMessage;
 import org.wso2.carbon.oc.agent.message.OCMessageConstants;
 import org.wso2.carbon.oc.agent.model.OCPublisherConfiguration;
-import org.wso2.carbon.oc.agent.message.OCMessage;
 import org.wso2.carbon.oc.agent.publisher.OCDataPublisher;
 
 import java.io.IOException;
@@ -50,210 +48,210 @@ import java.util.Map;
  */
 public class RTPublisher implements OCDataPublisher {
 
-	private String serverId;
-	private static final String REGISTRATION_PATH = "/servers";
-	private static final String SYNCHRONIZATION_PATH = "/servers/";
-	private static final String CONTENT_TYPE = "application/json";
-	private static final String CHARACTER_SET = "UTF-8";
+    private String serverId;
+    private static final String REGISTRATION_PATH = "/servers";
+    private static final String SYNCHRONIZATION_PATH = "/servers/";
+    private static final String CONTENT_TYPE = "application/json";
+    private static final String CHARACTER_SET = "UTF-8";
 
-	private static Logger logger = LoggerFactory.getLogger(RTPublisher.class);
-	private ObjectMapper objectMapper = new ObjectMapper();
-	private HttpClient httpClient;
-	private boolean isRegistered = false;
-	private String ocUrl;
-	private long interval;
+    private static final Log logger = LogFactory.getLog(RTPublisher.class);
+    private ObjectMapper objectMapper = new ObjectMapper();
+    private HttpClient httpClient;
+    private boolean isRegistered = false;
+    private String ocUrl;
+    private long interval;
 
-	@Override
+    @Override
     public void init(OCPublisherConfiguration ocPublisherConfiguration) {
-		// get set config
-		Map<String, String> configMap = ocPublisherConfiguration.getOcPublisherProperties().getPropertyMap();
+        // get set config
+        Map<String, String> configMap = ocPublisherConfiguration.getOcPublisherProperties().getPropertyMap();
 
-		String username = configMap.get(RTConstants.USERNAME);
-		String password = configMap.get(RTConstants.PASSWORD);
-		this.ocUrl = configMap.get(RTConstants.REPORT_URL);
+        String username = configMap.get(RTConstants.USERNAME);
+        String password = configMap.get(RTConstants.PASSWORD);
+        this.ocUrl = configMap.get(RTConstants.REPORT_URL);
 
-		this.interval = Long.parseLong(configMap.get(RTConstants.INTERVAL));
+        this.interval = Long.parseLong(configMap.get(RTConstants.INTERVAL));
 
-		if (StringUtils.isBlank(this.ocUrl)) {
-			throw new IllegalArgumentException("Operations Center URL is unspecified.");
-		}
-		this.httpClient = new HttpClient(new MultiThreadedHttpConnectionManager());
-		this.httpClient.getState().setCredentials(AuthScope.ANY,
-		                                          new UsernamePasswordCredentials(username,
-		                                                                          password));
-		this.httpClient.getParams().setAuthenticationPreemptive(true);
-		logger.info("RTPublisher init done");
-
-
-	}
-
-	public void publish(OCMessage ocMessage) {
-		logger.info("======real-time===========reporting");
-
-		if (!isRegistered) {
-			register(ocMessage);
-		} else {
-			sync(ocMessage);
-		}
-	}
-
-	/**
-	 * send the real time registration message
-	 * @param ocMessage - all oc data
-	 */
-	private void register(OCMessage ocMessage) {
-
-		String jsonString = RTMessageUtil.getRegistrationRequestMessage(ocMessage);
-
-		//request check
-		String responseBody = null;
-		try {
-			responseBody =
-					sendPostRequest(ocUrl + REGISTRATION_PATH, jsonString, HttpStatus.SC_CREATED);
-		} catch (IOException e) {
-			logger.info("RTPublisher connection down while registering: ", e);
-			isRegistered = false;
-		}
-
-		//response check
-		if (responseBody != null && responseBody.length() > 0) {
-			Map<String, String> regResMap;
-			try {
-
-				regResMap = objectMapper
-						.readValue(responseBody, new TypeReference<HashMap<String, String>>() {
-						});
-				if(regResMap != null){
-					serverId = regResMap.get(OCMessageConstants.SERVER_ID);
-				}
+        if (StringUtils.isBlank(this.ocUrl)) {
+            throw new IllegalArgumentException("Operations Center URL is unspecified.");
+        }
+        this.httpClient = new HttpClient(new MultiThreadedHttpConnectionManager());
+        this.httpClient.getState().setCredentials(AuthScope.ANY,
+                new UsernamePasswordCredentials(username,
+                        password));
+        this.httpClient.getParams().setAuthenticationPreemptive(true);
+        logger.info("RTPublisher init done");
 
 
-				isRegistered = true;
-			} catch (IOException e) {
-				logger.info("Failed to read values from RegistrationResponse", e);
-				isRegistered = false;
-			}
-		}
-	}
+    }
 
-	/**
-	 * send the real time synchronization message
-	 * @param ocMessage - all oc data
-	 */
-	private void sync(OCMessage ocMessage) {
+    public void publish(OCMessage ocMessage) {
+        logger.debug("======real-time===========reporting");
 
-		String jsonString = RTMessageUtil.getSynchronizationRequestMessage(ocMessage);
-		String responseBody = null;
+        if (!isRegistered) {
+            register(ocMessage);
+        } else {
+            sync(ocMessage);
+        }
+    }
 
-		//request check
-		try {
-			responseBody =
-					sendPutRequest(ocUrl + SYNCHRONIZATION_PATH + serverId, jsonString, HttpStatus.SC_OK);
-		} catch (IOException e) {
-			logger.info("RTPublisher connection down while sync messaging: ", e);
-			isRegistered = false;
-		}
+    /**
+     * send the real time registration message
+     *
+     * @param ocMessage - all oc data
+     */
+    private void register(OCMessage ocMessage) {
 
-		//response check
-		if (responseBody != null && responseBody.length() > 0) {
-			List<String> synResMap;
-			try {
-				synResMap = objectMapper
-						.readValue(responseBody, new TypeReference<List<String>>() {
-						});
+        String jsonString = RTMessageUtil.getRegistrationRequestMessage(ocMessage);
 
-				isRegistered = true;
-			} catch (IOException e) {
-				logger.info("Failed to read values from SynchronizationResponse", e);
-				isRegistered = false;
-				return;
-			}
+        //request check
+        String responseBody = null;
+        try {
+            responseBody =
+                    sendPostRequest(ocUrl + REGISTRATION_PATH, jsonString, HttpStatus.SC_CREATED);
+        } catch (IOException e) {
+            logger.error("RTPublisher connection down while registering: ", e);
+            isRegistered = false;
+        }
 
-			if (synResMap != null) {
-				for(String command : synResMap) {
-					OCAgentUtils.performAction(command);
-					logger.info("Executing command. [Command:" + command + "]");
-				}
+        //response check
+        if (responseBody != null && responseBody.length() > 0) {
+            Map<String, String> regResMap;
+            try {
 
-			} else {
-				logger.info("Unable receive JSON synchronization response.");
-			}
-		}
-	}
+                regResMap = objectMapper
+                        .readValue(responseBody, new TypeReference<HashMap<String, String>>() {
+                        });
+                if (regResMap != null) {
+                    serverId = regResMap.get(OCMessageConstants.SERVER_ID);
+                }
 
-	/**
-	 *
-	 * @param url      String - operations center url
-	 * @param request  String - json string request message
-	 * @param expected int - expected http status code
-	 * @return String - response json string
-	 * @throws IOException - sever connect problem
-	 */
-	public String sendPostRequest(String url, String request, int expected) throws IOException {
-		PostMethod postMethod = new PostMethod(url);
-		try {
-			RequestEntity entity = new StringRequestEntity(request, CONTENT_TYPE, CHARACTER_SET);
-			postMethod.setRequestEntity(entity);
-			if (logger.isTraceEnabled()) {
-				logger.trace("Sending POST request. " + request);
-			}
 
-				int statusCode = httpClient.executeMethod(postMethod);
-				if (statusCode == expected) {
-					String responseBody = postMethod.getResponseBodyAsString();
-					if (logger.isTraceEnabled()) {
-						logger.trace("Response received. " + responseBody);
-					}
-					return responseBody;
-				} else {
-					logger.info("Request failed with status Code : " + statusCode);
-				}
-		} catch (UnsupportedEncodingException e) {
-			logger.info("Failed to register with Operations Center", e);
-		} finally {
-			postMethod.releaseConnection();
-		}
-		return null;
-	}
+                isRegistered = true;
+            } catch (IOException e) {
+                logger.error("Failed to read values from RegistrationResponse", e);
+                isRegistered = false;
+            }
+        }
+    }
 
-	/**
-	 *
-	 * @param url      String - operations center url
-	 * @param request  String - json string request message
-	 * @param expected int - expected http status code
-	 * @return String - response json string
-	 * @throws IOException - sever connect problem
-	 */
-	public String sendPutRequest(String url, String request, int expected) throws IOException {
-		PutMethod putMethod = new PutMethod(url);
-		try {
-			RequestEntity entity = new StringRequestEntity(request, CONTENT_TYPE, CHARACTER_SET);
-			putMethod.setRequestEntity(entity);
-			if (logger.isTraceEnabled()) {
-				logger.trace("Sending PUT request. " + request);
-			}
+    /**
+     * send the real time synchronization message
+     *
+     * @param ocMessage - all oc data
+     */
+    private void sync(OCMessage ocMessage) {
 
-			int statusCode = httpClient.executeMethod(putMethod);
-			if (statusCode == expected) {
-				String responseBody = putMethod.getResponseBodyAsString();
-				if (logger.isTraceEnabled()) {
-					logger.trace("Response received. " + responseBody);
-				}
-				return responseBody;
-			} else {
-				logger.info("Request failed with status Code : " + statusCode);
-				throw new IOException();
-			}
+        String jsonString = RTMessageUtil.getSynchronizationRequestMessage(ocMessage);
+        String responseBody = null;
 
-		} catch (UnsupportedEncodingException e) {
-			logger.info("Failed to sync data with Operations Center", e);
-		} finally {
-			putMethod.releaseConnection();
-		}
-		return null;
-	}
+        //request check
+        try {
+            responseBody =
+                    sendPutRequest(ocUrl + SYNCHRONIZATION_PATH + serverId, jsonString, HttpStatus.SC_OK);
+        } catch (IOException e) {
+            logger.error("RTPublisher connection down while sync messaging: ", e);
+            isRegistered = false;
+        }
 
-	public long getInterval() {
-		return interval;
-	}
+        //response check
+        if (responseBody != null && responseBody.length() > 0) {
+            List<String> synResMap;
+            try {
+                synResMap = objectMapper
+                        .readValue(responseBody, new TypeReference<List<String>>() {
+                        });
+
+                isRegistered = true;
+            } catch (IOException e) {
+                logger.error("Failed to read values from SynchronizationResponse", e);
+                isRegistered = false;
+                return;
+            }
+
+            if (synResMap != null) {
+                for (String command : synResMap) {
+                    OCAgentUtils.performAction(command);
+                    logger.debug("Executing command. [Command:" + command + "]");
+                }
+
+            } else {
+                logger.error("Unable receive JSON synchronization response.");
+            }
+        }
+    }
+
+    /**
+     * @param url      String - operations center url
+     * @param request  String - json string request message
+     * @param expected int - expected http status code
+     * @return String - response json string
+     * @throws IOException - sever connect problem
+     */
+    public String sendPostRequest(String url, String request, int expected) throws IOException {
+        PostMethod postMethod = new PostMethod(url);
+        try {
+            RequestEntity entity = new StringRequestEntity(request, CONTENT_TYPE, CHARACTER_SET);
+            postMethod.setRequestEntity(entity);
+            if (logger.isTraceEnabled()) {
+                logger.trace("Sending POST request. " + request);
+            }
+
+            int statusCode = httpClient.executeMethod(postMethod);
+            if (statusCode == expected) {
+                String responseBody = postMethod.getResponseBodyAsString();
+                if (logger.isTraceEnabled()) {
+                    logger.trace("Response received. " + responseBody);
+                }
+                return responseBody;
+            } else {
+                logger.debug("Request failed with status Code : " + statusCode);
+            }
+        } catch (UnsupportedEncodingException e) {
+            logger.error("Failed to register with Operations Center", e);
+        } finally {
+            postMethod.releaseConnection();
+        }
+        return null;
+    }
+
+    /**
+     * @param url      String - operations center url
+     * @param request  String - json string request message
+     * @param expected int - expected http status code
+     * @return String - response json string
+     * @throws IOException - sever connect problem
+     */
+    public String sendPutRequest(String url, String request, int expected) throws IOException {
+        PutMethod putMethod = new PutMethod(url);
+        try {
+            RequestEntity entity = new StringRequestEntity(request, CONTENT_TYPE, CHARACTER_SET);
+            putMethod.setRequestEntity(entity);
+            if (logger.isTraceEnabled()) {
+                logger.trace("Sending PUT request. " + request);
+            }
+
+            int statusCode = httpClient.executeMethod(putMethod);
+            if (statusCode == expected) {
+                String responseBody = putMethod.getResponseBodyAsString();
+                if (logger.isTraceEnabled()) {
+                    logger.trace("Response received. " + responseBody);
+                }
+                return responseBody;
+            } else {
+                logger.debug("Request failed with status Code : " + statusCode);
+                throw new IOException();
+            }
+
+        } catch (UnsupportedEncodingException e) {
+            logger.error("Failed to sync data with Operations Center", e);
+        } finally {
+            putMethod.releaseConnection();
+        }
+        return null;
+    }
+
+    public long getInterval() {
+        return interval;
+    }
 }

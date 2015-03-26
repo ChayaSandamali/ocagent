@@ -16,6 +16,8 @@
 
 package org.wso2.carbon.oc.agent.internal;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wso2.carbon.base.api.ServerConfigurationService;
@@ -25,7 +27,7 @@ import org.wso2.carbon.utils.ConfigurationContextService;
 
 public class OCAgentDataHolder {
 	private static OCAgentDataHolder instance = new OCAgentDataHolder();
-	private static Logger logger = LoggerFactory.getLogger(OCAgentDataHolder.class);
+    private static final Log logger = LogFactory.getLog(OCAgentDataHolder.class);
 
 	private ConfigurationContextService configurationContextService;
 	private ServerConfigurationService serverConfigurationService;

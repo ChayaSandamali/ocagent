@@ -16,6 +16,8 @@
 
 package org.wso2.carbon.oc.agent.internal;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.osgi.service.component.ComponentContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -58,7 +60,7 @@ import java.util.concurrent.TimeUnit;
 public class OCAgentComponent {
 	private static final ScheduledExecutorService reporterTaskExecutor =
 			Executors.newScheduledThreadPool(1);
-	private static Logger logger = LoggerFactory.getLogger(OCAgentComponent.class);
+    private static final Log logger = LogFactory.getLog(OCAgentComponent.class);
 
 	protected void activate(ComponentContext componentContext) {
 		try {
@@ -80,8 +82,6 @@ public class OCAgentComponent {
                     OCAgentReporterTask ocAgentReporterTask
                             = new OCAgentReporterTask(ocDataPublisher);
 
-//                new Thread(ocAgentReporterTask).start();
-
                     reporterTaskExecutor.scheduleAtFixedRate(ocAgentReporterTask,
                                                              0,
                                                              ocDataPublisher.getInterval(),
@@ -89,7 +89,7 @@ public class OCAgentComponent {
 			}
 
 		} catch (Throwable throwable) {
-			logger.info("Failed to activate OperationsCenterAgentComponent", throwable);
+			logger.error("Failed to activate OperationsCenterAgentComponent", throwable);
 			reporterTaskExecutor.shutdown();
 		}
 
