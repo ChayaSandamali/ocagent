@@ -19,8 +19,6 @@ package org.wso2.carbon.oc.agent.internal;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.osgi.service.component.ComponentContext;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.wso2.carbon.base.api.ServerConfigurationService;
 import org.wso2.carbon.oc.agent.model.OCPublisherConfiguration;
 import org.wso2.carbon.oc.agent.publisher.OCDataPublisher;
@@ -58,85 +56,85 @@ import java.util.concurrent.TimeUnit;
  */
 
 public class OCAgentComponent {
-	private static final ScheduledExecutorService reporterTaskExecutor =
-			Executors.newScheduledThreadPool(1);
+    private static final ScheduledExecutorService reporterTaskExecutor =
+            Executors.newScheduledThreadPool(1);
     private static final Log logger = LogFactory.getLog(OCAgentComponent.class);
 
-	protected void activate(ComponentContext componentContext) {
-		try {
-			logger.info("Activating Operations Center Agent component.");
+    protected void activate(ComponentContext componentContext) {
+        try {
+            logger.info("Activating Operations Center Agent component.");
 
-			List<OCPublisherConfiguration> ocPublisherConfigurationList =
-					OCAgentUtils.getOcPublishers().getPublishersList();
+            List<OCPublisherConfiguration> ocPublisherConfigurationList =
+                    OCAgentUtils.getOcPublishers().getPublishersList();
 
-			//active publisher config map
-			for (OCPublisherConfiguration ocPublisherConfiguration : ocPublisherConfigurationList) {
-                    OCDataPublisher ocDataPublisher = null;
+            //active publisher config map
+            for (OCPublisherConfiguration ocPublisherConfiguration : ocPublisherConfigurationList) {
+                OCDataPublisher ocDataPublisher = null;
 
-                    Class publisherClass = Class.forName(ocPublisherConfiguration.getClassPath());
+                Class publisherClass = Class.forName(ocPublisherConfiguration.getClassPath());
 
-                    ocDataPublisher = (OCDataPublisher) publisherClass.newInstance();
+                ocDataPublisher = (OCDataPublisher) publisherClass.newInstance();
 
-                    ocDataPublisher.init(ocPublisherConfiguration);
+                ocDataPublisher.init(ocPublisherConfiguration);
 
-                    OCAgentReporterTask ocAgentReporterTask
-                            = new OCAgentReporterTask(ocDataPublisher);
+                OCAgentReporterTask ocAgentReporterTask
+                        = new OCAgentReporterTask(ocDataPublisher);
 
-                    reporterTaskExecutor.scheduleAtFixedRate(ocAgentReporterTask,
-                                                             0,
-                                                             ocDataPublisher.getInterval(),
-                                                             TimeUnit.MILLISECONDS);
-			}
+                reporterTaskExecutor.scheduleAtFixedRate(ocAgentReporterTask,
+                        0,
+                        ocDataPublisher.getInterval(),
+                        TimeUnit.MILLISECONDS);
+            }
 
-		} catch (Throwable throwable) {
-			logger.error("Failed to activate OperationsCenterAgentComponent", throwable);
-			reporterTaskExecutor.shutdown();
-		}
+        } catch (Throwable throwable) {
+            logger.error("Failed to activate OperationsCenterAgentComponent", throwable);
+            reporterTaskExecutor.shutdown();
+        }
 
 
-	}
+    }
 
-	protected void deactivate(ComponentContext componentContext) {
-		logger.info("Deactivating Operations Center Agent component.");
-		reporterTaskExecutor.shutdown();
-	}
+    protected void deactivate(ComponentContext componentContext) {
+        logger.info("Deactivating Operations Center Agent component.");
+        reporterTaskExecutor.shutdown();
+    }
 
-	protected void unsetConfigurationContextService(
-			ConfigurationContextService configurationContextService) {
-		OCAgentDataHolder.getInstance().setConfigurationContextService(null);
-	}
+    protected void unsetConfigurationContextService(
+            ConfigurationContextService configurationContextService) {
+        OCAgentDataHolder.getInstance().setConfigurationContextService(null);
+    }
 
-	protected void setConfigurationContextService(
-			ConfigurationContextService configurationContextService) {
-		OCAgentDataHolder.getInstance()
-		                 .setConfigurationContextService(configurationContextService);
-	}
+    protected void setConfigurationContextService(
+            ConfigurationContextService configurationContextService) {
+        OCAgentDataHolder.getInstance()
+                .setConfigurationContextService(configurationContextService);
+    }
 
-	protected void unsetServerConfigurationService(
-			ServerConfigurationService serverConfigurationService) {
-		OCAgentDataHolder.getInstance().setServerConfigurationService(null);
-	}
+    protected void unsetServerConfigurationService(
+            ServerConfigurationService serverConfigurationService) {
+        OCAgentDataHolder.getInstance().setServerConfigurationService(null);
+    }
 
-	protected void setServerConfigurationService(
-			ServerConfigurationService serverConfigurationService) {
-		OCAgentDataHolder.getInstance()
-		                 .setServerConfigurationService(serverConfigurationService);
-	}
+    protected void setServerConfigurationService(
+            ServerConfigurationService serverConfigurationService) {
+        OCAgentDataHolder.getInstance()
+                .setServerConfigurationService(serverConfigurationService);
+    }
 
-	protected void unsetServerAdminService(IServerAdmin serverAdmin) {
-		OCAgentDataHolder.getInstance().setServerAdmin(null);
-	}
+    protected void unsetServerAdminService(IServerAdmin serverAdmin) {
+        OCAgentDataHolder.getInstance().setServerAdmin(null);
+    }
 
-	protected void setServerAdminService(IServerAdmin serverAdmin) {
-		OCAgentDataHolder.getInstance().setServerAdmin(serverAdmin);
-	}
+    protected void setServerAdminService(IServerAdmin serverAdmin) {
+        OCAgentDataHolder.getInstance().setServerAdmin(serverAdmin);
+    }
 
-	protected void setRealmService(RealmService realmService) {
-		OCAgentDataHolder.getInstance().setRealmService(realmService);
-	}
+    protected void setRealmService(RealmService realmService) {
+        OCAgentDataHolder.getInstance().setRealmService(realmService);
+    }
 
-	protected void unsetRealmService(RealmService realmService) {
-		OCAgentDataHolder.getInstance().setRealmService(null);
-	}
+    protected void unsetRealmService(RealmService realmService) {
+        OCAgentDataHolder.getInstance().setRealmService(null);
+    }
 
 }

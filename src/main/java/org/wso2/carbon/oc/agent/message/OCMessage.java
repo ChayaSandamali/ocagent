@@ -49,7 +49,6 @@ public class OCMessage {
 	private List<String> patches;
 	private String timestamp;
 
-	private Map<String, String> dataMap;
 
 	public String getLocalIp() {
 		return localIp;

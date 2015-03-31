@@ -20,7 +20,7 @@ package org.wso2.carbon.oc.agent.internal.exceptions;
  * Exception for handle extracting data
  */
 public class ParameterUnavailableException extends Exception {
-	public ParameterUnavailableException(String message) {
-		super(message);
-	}
+    public ParameterUnavailableException(String message) {
+        super(message);
+    }
 }

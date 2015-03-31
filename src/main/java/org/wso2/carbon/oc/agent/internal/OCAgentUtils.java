@@ -18,8 +18,6 @@ package org.wso2.carbon.oc.agent.internal;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.wso2.carbon.oc.agent.model.OCConfiguration;
 import org.wso2.carbon.oc.agent.model.OCPublishers;
 import org.wso2.carbon.server.admin.service.ServerAdmin;
@@ -37,64 +35,65 @@ import java.io.FileReader;
 */
 
 public class OCAgentUtils {
-	private static final String FORCE_SHUTDOWN = "FORCE_SHUTDOWN";
-	private static final String FORCE_RESTART = "FORCE_RESTART";
-	private static final String GRACEFUL_SHUTDOWN = "GRACEFUL_SHUTDOWN";
-	private static final String GRACEFUL_RESTART = "GRACEFUL_RESTART";
+    private static final String FORCE_SHUTDOWN = "FORCE_SHUTDOWN";
+    private static final String FORCE_RESTART = "FORCE_RESTART";
+    private static final String GRACEFUL_SHUTDOWN = "GRACEFUL_SHUTDOWN";
+    private static final String GRACEFUL_RESTART = "GRACEFUL_RESTART";
     private static final Log logger = LogFactory.getLog(OCAgentUtils.class);
 
-	private OCAgentUtils() {
-	}
+    private OCAgentUtils() {
+    }
 
-	/**
-	 * Extract all enabled publisher info
-	 * @return Publishers - get all publisher objects
-	 */
-	//handle NPE
-	public static OCPublishers getOcPublishers() {
-		OCPublishers publishers = null;
-		try {
-			JAXBContext context = JAXBContext.newInstance(OCConfiguration.class);
-			Unmarshaller um = context.createUnmarshaller();
-			//TODO
-			OCConfiguration oc = (OCConfiguration) um.unmarshal(new FileReader(
-					CarbonUtils.getCarbonConfigDirPath() + File.separator +
-					OCAgentConstants.OC_XML));
-			publishers = oc.getOcPublishers();
-		} catch (JAXBException e) {
-			logger.error(e.getMessage(), e);
-		} catch (FileNotFoundException e) {
-			logger.error(OCAgentConstants.OC_XML + " is missing in this path", e);
-		}
+    /**
+     * Extract all enabled publisher info
+     *
+     * @return Publishers - get all publisher objects
+     */
+    public static OCPublishers getOcPublishers() {
+        OCPublishers publishers = null;
+        try {
+            JAXBContext context = JAXBContext.newInstance(OCConfiguration.class);
+            Unmarshaller um = context.createUnmarshaller();
+            OCConfiguration oc = (OCConfiguration) um.unmarshal(new FileReader(
+                    CarbonUtils.getCarbonConfigDirPath() + File.separator +
+                            OCAgentConstants.OC_XML));
+            publishers = oc.getOcPublishers();
+        } catch (JAXBException e) {
+            logger.error(e.getMessage(), e);
+        } catch (FileNotFoundException e) {
+            logger.error(OCAgentConstants.OC_XML + " is missing in this path", e);
+        }
 
-		return publishers;
-	}
+        return publishers;
+    }
 
-	/**
-	 * @param command "RESTART", "SHUTDOWN" etc..
-	 */
+    /**
+     * @param command "RESTART", "SHUTDOWN" etc..
+     */
 
-	public static void performAction(String command) {
-		ServerAdmin serverAdmin =
-				(ServerAdmin) OCAgentDataHolder.getInstance().getServerAdmin();
-		if (serverAdmin != null) {
-			try {
-				if (FORCE_RESTART.equals(command)) {
-					serverAdmin.restart();
-				} else if (GRACEFUL_RESTART.equals(command)) {
-					serverAdmin.restartGracefully();
-				} else if (FORCE_SHUTDOWN.equals(command)) {
-					serverAdmin.shutdown();
-				} else if (GRACEFUL_SHUTDOWN.equals(command)) {
-					serverAdmin.shutdownGracefully();
-				} else {
-					logger.debug("Unknown command received. [" + command + "]");
-				}
-			} catch (Exception e) {
-				logger.error("Failed while executing command. [" + command + "]", e);
-			}
-		} else {
-			logger.error("Unable to perform action, ServerAdmin is null");
-		}
-	}
+    public static void performAction(String command) {
+        ServerAdmin serverAdmin =
+                (ServerAdmin) OCAgentDataHolder.getInstance().getServerAdmin();
+        if (serverAdmin != null) {
+            try {
+                if (FORCE_RESTART.equals(command)) {
+                    serverAdmin.restart();
+                } else if (GRACEFUL_RESTART.equals(command)) {
+                    serverAdmin.restartGracefully();
+                } else if (FORCE_SHUTDOWN.equals(command)) {
+                    serverAdmin.shutdown();
+                } else if (GRACEFUL_SHUTDOWN.equals(command)) {
+                    serverAdmin.shutdownGracefully();
+                } else {
+                    if (logger.isDebugEnabled()) {
+                        logger.debug("Unknown command received. [" + command + "]");
+                    }
+                }
+            } catch (Exception e) {
+                logger.error("Failed while executing command. [" + command + "]", e);
+            }
+        } else {
+            logger.error("Unable to perform action, ServerAdmin is null");
+        }
+    }
 }

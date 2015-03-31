@@ -21,9 +21,9 @@ package org.wso2.carbon.oc.agent.internal;
  */
 public class OCAgentConstants {
 
-	public static final String OC_XML = "operations-center.xml";
+    public static final String OC_XML = "operations-center.xml";
 
 
-	private OCAgentConstants() {
-	}
+    private OCAgentConstants() {
+    }
 }
