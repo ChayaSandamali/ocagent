@@ -5,12 +5,12 @@
 
 
     <modelVersion>4.0.0</modelVersion>
-    <groupId>org.wos2.carbon</groupId>
-    <artifactId>org.wos2.carbon.operationscenter.agent</artifactId>
+    <groupId>org.wso2.carbon</groupId>
+    <artifactId>org.wso2.carbon.operationscenter.agent</artifactId>
     <version>1.0.0</version>
     <packaging>bundle</packaging>
     <name>WSO2 Operations Center Agent</name>
-    <description>org.wos2.carbon.operationscenter.agent</description>
+    <description>org.wso2.carbon.operationscenter.agent</description>
     <url>http://wso2.org</url>
 
 
@@ -172,11 +172,15 @@
                             org.wso2.carbon.oc.agent.internal.*,
                             org.wso2.carbon.oc.agent.publisher.*,
                             org.wso2.carbon.oc.agent.message.*,
+                            org.wso2.carbon.oc.agent.beans.*,
+                            org.wso2.carbon.oc.agent.model.*,
                         </Private-Package>
                         <Export-Package>
                             !org.wso2.carbon.oc.agent.publisher.*,
                             !org.wso2.carbon.oc.agent.internal.*,
                             !org.wso2.carbon.oc.agent.message.*,
+                            !org.wso2.carbon.oc.agent.beans.*,
+                            !org.wso2.carbon.oc.agent.model.*,
                             org.wso2.andes.jndi.*
                         </Export-Package>
                         <Import-Package>
